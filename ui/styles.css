@@ -255,8 +255,7 @@ h1 {
 /* ── Content grid ───────────────────────────────────────────────────── */
 
 .content {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 470px;
+  display: flex;
   gap: 16px;
   flex: 1;
   min-height: 0;
@@ -265,6 +264,8 @@ h1 {
 /* ── Deal queue ─────────────────────────────────────────────────────── */
 
 .queue {
+  flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -376,8 +377,7 @@ h1 {
 .deal-meta .dot { opacity: .35; }
 
 .deal-right { text-align: right; flex: none; }
-.deal-amount { font-size: 16px; font-weight: 600; letter-spacing: -.02em; }
-.deal-ago { font-size: 11px; color: var(--text-40); margin-top: 2px; }
+.deal-ago { font-size: 11px; color: var(--text-40); }
 
 .deal-chips { display: flex; align-items: center; gap: 8px; margin-top: 11px; }
 
@@ -428,7 +428,38 @@ h1 {
 
 /* ── Review panel ───────────────────────────────────────────────────── */
 
+/* Animating container: closed by default, slides in from the right when a
+   deal is selected. The panel keeps a fixed 470px width inside so content
+   doesn't reflow mid-animation. */
+.panel-wrap {
+  flex: none;
+  display: flex;
+  min-height: 0;
+  overflow: hidden;
+  width: 0;
+  opacity: 0;
+  transform: translateX(30px);
+  pointer-events: none;
+  transition:
+    width .42s cubic-bezier(.22, .9, .24, 1),
+    opacity .34s ease,
+    transform .42s cubic-bezier(.22, .9, .24, 1);
+}
+
+.panel-wrap.open {
+  width: 470px;
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panel-wrap { transition: none; }
+}
+
 .panel {
+  width: 470px;
+  flex: none;
   display: flex;
   flex-direction: column;
   min-height: 0;

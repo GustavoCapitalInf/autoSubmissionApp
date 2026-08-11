@@ -10,7 +10,8 @@ const state = {
   deals: [],
   baseUrl: "",
   fileKey: "",              // desk API key, appended to direct file URLs
-  selId: null,
+  selId: null,              // selected deal; null = review panel closed
+  lastSelId: null,          // content source while the panel animates closed
   filter: "Awaiting",       // Awaiting | Approved | Rejected
   reviewer: "Santi",        // stand-in for auth, per the handoff
   decided: 0,               // decisions made this session
@@ -32,8 +33,6 @@ const seasonalityUrl = (dealId) =>
 const esc = (s) =>
   String(s ?? "").replace(/[&<>"']/g, (c) =>
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-
-const money = (n) => "$" + Number(n || 0).toLocaleString("en-US");
 
 const fmtBytes = (b) =>
   b >= 1024 * 1024
@@ -96,6 +95,11 @@ const visible = () =>
 
 const selected = () => state.deals.find((d) => d.id === state.selId) || null;
 
+/// Deal whose content the panel shows — the live selection, or the last
+/// selection while the panel animates closed (so it doesn't flash empty).
+const panelDeal = () =>
+  state.deals.find((d) => d.id === (state.selId ?? state.lastSelId)) || null;
+
 /* ── Rendering ─────────────────────────────────────────────────────── */
 
 function renderAll() {
@@ -144,7 +148,7 @@ function dealCard(d) {
        </div>`
     : "";
   return `
-  <div class="deal-card${sel ? " selected" : ""}" data-action="select-deal" data-id="${d.id}">
+  <div class="deal-card${sel ? " selected" : ""}" data-action="select-deal" data-id="${d.id}" data-selected="${sel}">
     <div class="deal-top">
       <div class="avatar risk-${esc(d.risk)}">${esc(d.initials)}</div>
       <div class="deal-main">
@@ -157,7 +161,6 @@ function dealCard(d) {
         </div>
       </div>
       <div class="deal-right">
-        <div class="deal-amount">${money(d.request)}</div>
         <div class="deal-ago">${ago(d.submittedAt)}</div>
       </div>
     </div>
@@ -318,7 +321,9 @@ function footerActions(sel) {
 }
 
 function renderPanel() {
-  const sel = selected();
+  const wrap = document.getElementById("panel-wrap");
+  wrap.classList.toggle("open", state.selId != null);
+  const sel = panelDeal();
   const panel = document.getElementById("panel");
 
   const eyebrow = !sel
@@ -337,7 +342,7 @@ function renderPanel() {
     </div>
     <h2>${esc(sel ? sel.company : "Nothing to review")}</h2>
     <div class="panel-chips">
-      <div class="panel-chip amount">${sel ? money(sel.request) : "$0"} requested</div>
+      <div class="panel-chip amount">${sel ? (sel.lenders || []).length : 0} lenders matched</div>
       <div class="panel-chip position">Position ${sel ? esc(sel.position) : "—"}</div>
     </div>
   </div>`;
@@ -476,11 +481,6 @@ async function loadPdf(url) {
 
 /* ── Actions ───────────────────────────────────────────────────────── */
 
-function selectNextAwaiting() {
-  const next = state.deals.find((d) => statusOf(d) === "awaiting");
-  if (next) state.selId = next.id;
-}
-
 function upsertDeal(deal) {
   const i = state.deals.findIndex((d) => d.id === deal.id);
   if (i >= 0) state.deals[i] = deal;
@@ -503,7 +503,9 @@ async function decide(kind, reason) {
     state.decided += 1;
     state.filter = "Awaiting";
     state.rejecting = false;
-    selectNextAwaiting();
+    // Deciding closes the panel; lastSelId keeps the decided deal's content
+    // mounted so the collapse animation shows the decision banner, not a blank.
+    state.selId = null;
     renderAll();
   } catch (e) {
     console.error("decision failed:", e);
@@ -518,7 +520,7 @@ function confirmReject() {
 }
 
 function openDoc(docId) {
-  const sel = selected();
+  const sel = panelDeal();
   const doc = (sel?.docs || []).find((d) => d.id === Number(docId));
   if (!doc || !sel) return;
   state.viewing = {
@@ -547,12 +549,19 @@ document.addEventListener("click", (e) => {
       renderTabs();
       renderList();
       break;
-    case "select-deal":
-      state.selId = Number(el.dataset.id);
+    case "select-deal": {
+      // Toggle computed from the card's render-time selected flag, not from
+      // current state — a double-fired handler then resolves identically to
+      // a single fire (same card closes, any other card opens/swaps).
+      const wasSelected = el.dataset.selected === "true";
+      const id = Number(el.dataset.id);
+      state.selId = wasSelected ? null : id;
+      if (!wasSelected) state.lastSelId = id;
       state.rejecting = false;
       renderList();
       renderPanel();
       break;
+    }
     case "reviewer":
       state.reviewer = el.dataset.name;
       renderPanel();
@@ -635,7 +644,6 @@ listen("server-event", (event) => {
   if (!msg || !msg.type) return;
   if (msg.type === "deal.created" && msg.deal) {
     upsertDeal(msg.deal);
-    if (!state.selId) selectNextAwaiting();
     renderAll();
   } else if (msg.type === "deal.decided" && msg.deal) {
     upsertDeal(msg.deal);
@@ -656,8 +664,7 @@ listen("server-event", (event) => {
     state.deals.sort(
       (a, b) => new Date(b.submittedAt) - new Date(a.submittedAt) || b.id - a.id
     );
-    selectNextAwaiting();
-    if (!state.selId && state.deals.length) state.selId = state.deals[0].id;
+    // Panel starts closed; a deal opens it on click.
   } catch (e) {
     console.error(e);
     document.getElementById("deal-list").innerHTML = `
