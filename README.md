@@ -86,9 +86,19 @@ desk_api_key = "<desk key>"
 ```
 
 Notifications fire on each desk whenever a new deal arrives (the app can sit
-minimized). **Packaging for Windows:** `cargo tauri build` on a Windows
-machine/CI produces the installer; only the desk app ships to reviewers — the
-server runs in your infrastructure.
+minimized).
+
+**Packaging for Windows:** the
+[`Windows desk installer`](.github/workflows/windows-desk.yml) workflow
+(Actions tab → Run workflow) builds the `.exe`/`.msi` on a Windows runner.
+Pass the server URL and desk key as workflow inputs to bake them in as
+defaults — reviewers then just download and run the installer with zero
+config (desk.toml / env vars still override). Download from the run's
+artifacts, or push a `v*` tag to get a GitHub release with the installers
+attached. The installer is unsigned for now, so SmartScreen warns on first
+run (More info → Run anyway); rotating the desk key later means rebuilding
+baked installers or distributing desk.toml. Only the desk app ships to
+reviewers — the server runs in your infrastructure.
 
 ### Local development
 

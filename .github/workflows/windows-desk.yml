@@ -1,0 +1,74 @@
+# Builds the Windows installer for the Conduit desk app.
+#
+# Run it from the Actions tab (workflow_dispatch): optionally provide the
+# server URL and desk API key to bake into the build as defaults — reviewers
+# then just download and run the installer, no desk.toml editing. Blank
+# inputs fall back to the CONDUIT_SERVER_URL repo variable / the
+# CONDUIT_DESK_KEY repo secret, if configured; all blank produces a neutral
+# build that expects desk.toml on each machine.
+#
+# Also runs on v* tags and attaches the installers to a GitHub release.
+#
+# The output installer is unsigned, so Windows SmartScreen shows
+# "Windows protected your PC" on first run — More info → Run anyway.
+# Code signing is the production fix.
+
+name: Windows desk installer
+
+on:
+  workflow_dispatch:
+    inputs:
+      server_url:
+        description: "Default server URL to bake in (e.g. https://conduit-server-ucxe.onrender.com)"
+        required: false
+        default: ""
+      desk_key:
+        description: "Default desk API key to bake in (blank = use CONDUIT_DESK_KEY secret if set)"
+        required: false
+        default: ""
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    env:
+      CONDUIT_DEFAULT_SERVER_URL: ${{ inputs.server_url || vars.CONDUIT_SERVER_URL || '' }}
+      CONDUIT_DEFAULT_DESK_KEY: ${{ inputs.desk_key || secrets.CONDUIT_DESK_KEY || '' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Install Tauri CLI
+        uses: cargo-bins/cargo-binstall@main
+      - run: cargo binstall tauri-cli --no-confirm
+
+      - name: Build installer
+        run: cargo tauri build
+
+      - name: Collect bundles
+        shell: bash
+        run: |
+          mkdir dist
+          cp target/release/bundle/nsis/*-setup.exe dist/ 2>/dev/null || true
+          cp target/release/bundle/msi/*.msi dist/ 2>/dev/null || true
+          ls -la dist
+
+      - name: Upload installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: conduit-desk-windows
+          path: dist/*
+          if-no-files-found: error
+
+      - name: Attach to release (tags only)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*

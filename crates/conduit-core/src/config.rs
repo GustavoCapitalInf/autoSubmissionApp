@@ -132,21 +132,50 @@ impl Default for DeskConfig {
 }
 
 impl DeskConfig {
+    /// Defaults compiled into the binary. Release builds for a specific
+    /// deployment can bake in the server URL and desk key
+    /// (`CONDUIT_DEFAULT_SERVER_URL` / `CONDUIT_DEFAULT_DESK_KEY` at build
+    /// time — see the Windows installer workflow), so installing the app is
+    /// all a reviewer has to do. desk.toml and env vars still override.
+    fn compiled_default() -> Self {
+        Self {
+            server_url: option_env!("CONDUIT_DEFAULT_SERVER_URL")
+                .filter(|s| !s.trim().is_empty())
+                .unwrap_or("http://127.0.0.1:4820")
+                .trim()
+                .to_string(),
+            desk_api_key: option_env!("CONDUIT_DEFAULT_DESK_KEY")
+                .unwrap_or("")
+                .trim()
+                .to_string(),
+        }
+    }
+
     pub fn load(data_dir: Option<&Path>) -> Self {
         let mut cfg = match data_dir.map(|d| d.join("desk.toml")) {
             Some(path) if path.exists() => std::fs::read_to_string(&path)
                 .ok()
                 .and_then(|s| toml::from_str(&s).ok())
-                .unwrap_or_default(),
+                .unwrap_or_else(Self::compiled_default),
             Some(path) => {
-                let cfg = Self::default();
+                let cfg = Self::compiled_default();
                 if let Ok(s) = toml::to_string_pretty(&cfg) {
                     let _ = std::fs::write(&path, s);
                 }
                 cfg
             }
-            None => Self::default(),
+            None => Self::compiled_default(),
         };
+        // A desk.toml written by an older or unconfigured build may carry the
+        // built-in placeholders; treat those as "unset" so baked defaults win.
+        let plain = Self::default();
+        let baked = Self::compiled_default();
+        if cfg.server_url == plain.server_url && baked.server_url != plain.server_url {
+            cfg.server_url = baked.server_url.clone();
+        }
+        if cfg.desk_api_key.is_empty() && !baked.desk_api_key.is_empty() {
+            cfg.desk_api_key = baked.desk_api_key.clone();
+        }
         env_string("CONDUIT_SERVER_URL", &mut cfg.server_url);
         env_string("CONDUIT_DESK_KEY", &mut cfg.desk_api_key);
         cfg.server_url = cfg.server_url.trim_end_matches('/').to_string();
