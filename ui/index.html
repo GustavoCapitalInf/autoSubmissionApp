@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Conduit — Submission Desk</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app">
+
+    <div class="ambient">
+      <div class="orb"></div>
+      <div class="vignette"></div>
+    </div>
+
+    <div id="overlay-root"></div>
+
+    <div class="frame">
+
+      <nav class="rail" data-tauri-drag-region>
+        <div class="logo">C</div>
+        <div class="rail-items">
+          <div class="rail-item active">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 10.2 12 3l9 7.2V20a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"></path>
+            </svg>
+          </div>
+        </div>
+      </nav>
+
+      <main>
+        <header data-tauri-drag-region>
+          <div class="header-titles">
+            <div class="eyebrow" data-tauri-drag-region>Submission desk</div>
+            <h1 id="page-title" data-tauri-drag-region>Awaiting decision</h1>
+          </div>
+          <div class="header-right">
+            <div class="search">
+              <span class="search-glyph">⌕</span>
+              <input id="search" type="text" placeholder="Search deals, pullers, lenders"
+                     autocomplete="off" spellcheck="false">
+              <span class="kbd" id="kbd-hint">⌘K</span>
+            </div>
+            <div class="win-controls">
+              <button class="win-btn" data-action="win-min" title="Minimize">–</button>
+              <button class="win-btn" data-action="win-max" title="Maximize">▢</button>
+              <button class="win-btn close" data-action="win-close" title="Close">✕</button>
+            </div>
+          </div>
+        </header>
+
+        <div class="stats">
+          <div class="stat-card">
+            <div class="stat-label">In queue</div>
+            <div class="stat-row">
+              <span class="stat-value" id="stat-queue">0</span>
+              <span class="stat-unit">deals</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Auto-submitted</div>
+            <div class="stat-row">
+              <span class="stat-value" id="stat-submitted">0</span>
+              <span class="stat-unit">packets sent</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="content">
+          <section class="queue">
+            <div class="tabbar">
+              <div class="segmented" id="tabs"></div>
+            </div>
+            <div class="deal-list" id="deal-list"></div>
+          </section>
+
+          <aside class="panel" id="panel"></aside>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

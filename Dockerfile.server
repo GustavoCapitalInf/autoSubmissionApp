@@ -1,0 +1,26 @@
+# conduit-server — hosted ingest/decision service.
+# Build:  docker build -f Dockerfile.server -t conduit-server .
+# Run:    docker run -p 4820:4820 \
+#           -e DATABASE_URL=... -e SUPABASE_URL=... -e SUPABASE_SERVICE_KEY=... \
+#           -e CONDUIT_INGEST_KEY=... -e CONDUIT_DESK_KEY=... \
+#           -e TZ=America/New_York conduit-server
+
+FROM rust:1-slim AS build
+WORKDIR /src
+COPY Cargo.toml Cargo.lock ./
+COPY crates ./crates
+# The desk (Tauri) crate is not part of the server image; give the workspace a
+# stub so `cargo build -p conduit-server` resolves without GTK/WebKit deps.
+RUN mkdir -p src-tauri/src \
+    && printf '[package]\nname = "conduit-desk"\nversion = "0.1.0"\nedition = "2021"\n' > src-tauri/Cargo.toml \
+    && printf 'fn main() {}\n' > src-tauri/src/main.rs
+RUN cargo build --release -p conduit-server
+
+FROM debian:bookworm-slim
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates tzdata \
+    && rm -rf /var/lib/apt/lists/*
+COPY --from=build /src/target/release/conduit-server /usr/local/bin/conduit-server
+ENV HOME=/var/lib/conduit
+RUN mkdir -p /var/lib/conduit
+EXPOSE 4820
+CMD ["conduit-server"]

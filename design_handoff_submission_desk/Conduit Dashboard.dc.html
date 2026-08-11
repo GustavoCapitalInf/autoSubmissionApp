@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics="">
+<style>
+@keyframes floaty { 0%{transform:translate3d(0,0,0) scale(1)} 50%{transform:translate3d(0,-26px,0) scale(1.05)} 100%{transform:translate3d(0,0,0) scale(1)} }
+@keyframes riseIn { from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:translateY(0)} }
+body { margin:0; background:#06070a; color:#eef0f4; font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",Helvetica,sans-serif; -webkit-font-smoothing:antialiased; }
+a { color:#9db4ff; text-decoration:none } a:hover { color:#c3d0ff }
+::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-thumb{background:rgba(255,255,255,.13);border-radius:8px}::-webkit-scrollbar-track{background:transparent}
+</style>
+<script src="./image-slot.js"></script>
+</helmet>
+<div style="position:relative; width:1440px; min-width:1440px; flex:none; flex-shrink:0; height:980px; overflow:hidden; background:#06070a;">
+
+  <div style="position:absolute; inset:0; overflow:hidden; pointer-events:none;">
+    <div style="position:absolute; width:760px; height:760px; left:420px; bottom:-460px; border-radius:50%; background:radial-gradient(circle at 50% 50%, rgba(50,215,180,.18), rgba(50,215,180,0) 68%); filter:blur(26px); animation:floaty 27s ease-in-out infinite;"></div>
+    <div style="position:absolute; inset:0; background:radial-gradient(130% 95% at 50% -5%, rgba(0,0,0,0) 28%, rgba(3,4,6,.80) 100%);"></div>
+  </div>
+
+  <sc-if value="{{ viewing }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute; inset:0; z-index:40; display:grid; place-items:center; background:rgba(4,5,8,.62); backdrop-filter:blur(14px) saturate(140%); -webkit-backdrop-filter:blur(14px) saturate(140%);">
+      <div style="width:840px; height:840px; display:flex; flex-direction:column; border-radius:26px; overflow:hidden; background:linear-gradient(165deg, rgba(255,255,255,.11), rgba(255,255,255,.03)); backdrop-filter:blur(40px) saturate(180%); -webkit-backdrop-filter:blur(40px) saturate(180%); border:1px solid rgba(255,255,255,.14); box-shadow:inset 0 1px 0 rgba(255,255,255,.20), 0 50px 100px -40px rgba(0,0,0,1);">
+        <div style="display:flex; align-items:center; gap:12px; padding:15px 18px; border-bottom:1px solid rgba(255,255,255,.08);">
+          <div style="flex:none; width:28px; height:32px; border-radius:6px; display:grid; place-items:center; font-size:8.5px; font-weight:700; color:#ffb3bd; background:linear-gradient(160deg, rgba(255,107,129,.20), rgba(255,107,129,.07)); border:1px solid rgba(255,107,129,.26);">PDF</div>
+          <div style="min-width:0;">
+            <div style="font-size:14.5px; font-weight:600; letter-spacing:-.012em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ viewingName }}</div>
+            <div style="font-size:11.5px; color:rgba(238,240,244,.42); margin-top:2px;">{{ viewingMeta }}</div>
+          </div>
+          <div style="margin-left:auto; display:flex; align-items:center; gap:8px;">
+            <div style="height:32px; padding:0 13px; display:grid; place-items:center; border-radius:16px; cursor:pointer; font-size:12.5px; color:rgba(238,240,244,.72); background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.09);">Download</div>
+            <div onClick="{{ closeViewer }}" style="width:32px; height:32px; display:grid; place-items:center; border-radius:16px; cursor:pointer; font-size:14px; color:rgba(238,240,244,.72); background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.09);">✕</div>
+          </div>
+        </div>
+        <div style="flex:1; min-height:0; padding:18px; overflow-y:auto; background:rgba(6,7,10,.45);">
+          <div style="position:relative; width:100%; height:100%; min-height:640px; border-radius:12px; overflow:hidden; border:1px solid rgba(255,255,255,.08);">
+            <image-slot id="pdf-preview" shape="rect" fit="contain" placeholder="PDF page renders here"></image-slot>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <div style="position:relative; display:grid; grid-template-columns:80px 1fr; height:980px;">
+
+    <nav style="display:flex; flex-direction:column; align-items:center; gap:22px; padding:22px 0 20px; margin:16px 0 16px 16px; width:64px; box-sizing:border-box; border-radius:24px; background:linear-gradient(160deg, rgba(255,255,255,.085), rgba(255,255,255,.025)); backdrop-filter:blur(34px) saturate(180%); -webkit-backdrop-filter:blur(34px) saturate(180%); border:1px solid rgba(255,255,255,.10); box-shadow:inset 0 1px 0 rgba(255,255,255,.16), 0 24px 60px -24px rgba(0,0,0,.9);">
+      <div style="width:34px; height:34px; border-radius:12px; background:linear-gradient(150deg,#a9c0ff,#6d5cff); box-shadow:0 6px 18px -6px rgba(110,120,255,.85), inset 0 1px 0 rgba(255,255,255,.55); display:grid; place-items:center; font-weight:700; font-size:15px; color:#0a0b12;">C</div>
+      <div style="display:flex; flex-direction:column; gap:8px; align-items:center;">
+        <div style="width:38px; height:38px; border-radius:13px; display:grid; place-items:center; font-size:15px; color:#0a0b12; background:linear-gradient(160deg, rgba(255,255,255,.92), rgba(255,255,255,.66)); box-shadow:0 8px 20px -10px rgba(255,255,255,.5), inset 0 1px 0 rgba(255,255,255,.9);"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.2 12 3l9 7.2V20a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"></path></svg></div>
+        
+        
+        
+        
+      </div>
+    </nav>
+
+    <main style="padding:20px 24px 22px 18px; display:flex; flex-direction:column; gap:16px; min-width:0; height:980px; box-sizing:border-box;">
+
+      <header style="display:flex; align-items:center; gap:16px;">
+        <div style="min-width:0;">
+          <div style="font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; color:rgba(238,240,244,.40); font-weight:600;">Submission desk</div>
+          <h1 style="margin:4px 0 0; font-size:26px; line-height:1.1; font-weight:600; letter-spacing:-.022em;">{{ pageTitle }}</h1>
+        </div>
+        <div style="margin-left:auto; display:flex; align-items:center; gap:10px;">
+          <div style="display:flex; align-items:center; gap:9px; height:38px; padding:0 14px; border-radius:19px; background:rgba(255,255,255,.055); backdrop-filter:blur(24px) saturate(160%); -webkit-backdrop-filter:blur(24px) saturate(160%); border:1px solid rgba(255,255,255,.09); box-shadow:inset 0 1px 0 rgba(255,255,255,.12); width:280px;">
+            <span style="opacity:.4; font-size:13px;">⌕</span>
+            <span style="font-size:13px; color:rgba(238,240,244,.40);">Search deals, pullers, lenders</span>
+            <span style="margin-left:auto; font-size:10px; font-family:ui-monospace,Menlo,monospace; color:rgba(238,240,244,.32); border:1px solid rgba(255,255,255,.12); border-radius:5px; padding:2px 5px;">⌘K</span>
+          </div>
+          
+        </div>
+      </header>
+
+      <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:12px;">
+        
+        <div style="position:relative; overflow:hidden; padding:14px 16px; border-radius:20px; background:linear-gradient(160deg, rgba(255,255,255,.085), rgba(255,255,255,.028)); backdrop-filter:blur(30px) saturate(170%); -webkit-backdrop-filter:blur(30px) saturate(170%); border:1px solid rgba(255,255,255,.10); box-shadow:inset 0 1px 0 rgba(255,255,255,.15), 0 20px 44px -28px rgba(0,0,0,.9);">
+          <div style="font-size:10.5px; letter-spacing:.13em; text-transform:uppercase; color:rgba(238,240,244,.42); font-weight:600;">In queue</div>
+          <div style="display:flex; align-items:baseline; gap:8px; margin-top:6px;"><span style="font-size:30px; font-weight:600; letter-spacing:-.03em;">{{ queueCount }}</span><span style="font-size:11.5px; color:rgba(238,240,244,.45);">deals</span></div>
+        </div>
+        <div style="position:relative; overflow:hidden; padding:14px 16px; border-radius:20px; background:linear-gradient(160deg, rgba(255,255,255,.085), rgba(255,255,255,.028)); backdrop-filter:blur(30px) saturate(170%); -webkit-backdrop-filter:blur(30px) saturate(170%); border:1px solid rgba(255,255,255,.10); box-shadow:inset 0 1px 0 rgba(255,255,255,.15), 0 20px 44px -28px rgba(0,0,0,.9);">
+          <div style="font-size:10.5px; letter-spacing:.13em; text-transform:uppercase; color:rgba(238,240,244,.42); font-weight:600;">Auto-submitted</div>
+          <div style="display:flex; align-items:baseline; gap:8px; margin-top:6px;"><span style="font-size:30px; font-weight:600; letter-spacing:-.03em;">{{ autoSubmitted }}</span><span style="font-size:11.5px; color:rgba(238,240,244,.45);">packets sent</span></div>
+        </div>
+        
+      </div>
+
+      <div style="display:grid; grid-template-columns:minmax(0,1fr) 470px; gap:16px; flex:1; min-height:0;">
+
+        <section style="display:flex; flex-direction:column; min-height:0; border-radius:26px; overflow:hidden; background:linear-gradient(165deg, rgba(255,255,255,.075), rgba(255,255,255,.022)); backdrop-filter:blur(34px) saturate(175%); -webkit-backdrop-filter:blur(34px) saturate(175%); border:1px solid rgba(255,255,255,.10); box-shadow:inset 0 1px 0 rgba(255,255,255,.15), 0 34px 70px -34px rgba(0,0,0,.95);">
+          <div style="display:flex; align-items:center; gap:8px; padding:14px 16px 12px; border-bottom:1px solid rgba(255,255,255,.07);">
+            <div style="display:flex; padding:3px; gap:2px; border-radius:14px; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.07);">
+              <sc-for list="{{ filters }}" as="f" hint-placeholder-count="3">
+                <div onClick="{{ f.onClick }}" style="{{ f.style }}">{{ f.label }}</div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="flex:1; overflow-y:auto; padding:10px 12px 14px; display:flex; flex-direction:column; gap:9px;">
+            <sc-for list="{{ deals }}" as="d" hint-placeholder-count="5">
+              <div onClick="{{ d.onSelect }}" style="{{ d.cardStyle }}">
+                <div style="display:flex; align-items:flex-start; gap:12px;">
+                  <div style="{{ d.avatarStyle }}">{{ d.initials }}</div>
+                  <div style="min-width:0; flex:1;">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                      <span style="font-size:15px; font-weight:600; letter-spacing:-.012em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ d.company }}</span>
+                    </div>
+                    <div style="margin-top:3px; font-size:11.5px; color:rgba(238,240,244,.45); display:flex; gap:7px; align-items:center;">
+                      <span>{{ d.industry }}</span><span style="opacity:.35;">·</span><span>{{ d.state }}</span><span style="opacity:.35;">·</span><span>{{ d.tib }} in business</span><span style="opacity:.35;">·</span><span>Position {{ d.position }}</span>
+                    </div>
+                  </div>
+                  <div style="text-align:right; flex:none;">
+                    <div style="font-size:16px; font-weight:600; letter-spacing:-.02em;">{{ d.request }}</div>
+                    <div style="font-size:11px; color:rgba(238,240,244,.40); margin-top:2px;">{{ d.ago }}</div>
+                  </div>
+                </div>
+                <div style="display:flex; align-items:center; gap:8px; margin-top:11px;">
+                  <div style="display:flex; align-items:center; gap:6px; height:26px; padding:0 10px; border-radius:13px; background:rgba(255,255,255,.055); border:1px solid rgba(255,255,255,.07); font-size:11.5px; color:rgba(238,240,244,.72);"><span style="color:rgba(238,240,244,.40);">FICO</span> {{ d.fico }}</div>
+                  <div style="display:flex; align-items:center; gap:6px; height:26px; padding:0 10px; border-radius:13px; background:rgba(255,255,255,.055); border:1px solid rgba(255,255,255,.07); font-size:11.5px; color:rgba(238,240,244,.72);"><span style="color:rgba(238,240,244,.40);">ADB</span> {{ d.adb }}</div>
+                  <div style="{{ d.nsfStyle }}"><span style="opacity:.62;">NSF</span> {{ d.nsf }}</div>
+                  <div style="display:flex; align-items:center; gap:6px; height:26px; padding:0 10px; border-radius:13px; background:rgba(255,255,255,.055); border:1px solid rgba(255,255,255,.07); font-size:11.5px; white-space:nowrap; color:rgba(238,240,244,.72);">{{ d.lenderCount }} lenders matched</div>
+                  <div style="margin-left:auto; display:flex; align-items:center; gap:7px;">
+                    <span style="font-size:11px; color:rgba(238,240,244,.38);">{{ d.assignedLabel }}</span>
+                    <div style="{{ d.assigneeStyle }}">{{ d.assigneeInitials }}</div>
+                  </div>
+                </div>
+              </div>
+            </sc-for>
+            <sc-if value="{{ isEmpty }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:56px 20px; text-align:center; color:rgba(238,240,244,.42);">
+                <div style="font-size:15px; font-weight:600; color:rgba(238,240,244,.72);">{{ emptyTitle }}</div>
+                <div style="font-size:12.5px; margin-top:5px;">{{ emptyBody }}</div>
+              </div>
+            </sc-if>
+          </div>
+        </section>
+
+        <aside style="display:flex; flex-direction:column; min-height:0; border-radius:26px; overflow:hidden; background:linear-gradient(165deg, rgba(255,255,255,.10), rgba(255,255,255,.028)); backdrop-filter:blur(38px) saturate(180%); -webkit-backdrop-filter:blur(38px) saturate(180%); border:1px solid rgba(255,255,255,.12); box-shadow:inset 0 1px 0 rgba(255,255,255,.18), 0 34px 70px -34px rgba(0,0,0,.95);">
+          <div style="padding:18px 20px 14px; border-bottom:1px solid rgba(255,255,255,.07);">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="{{ eyebrowStyle }}">{{ eyebrow }}</span>
+              <span style="margin-left:auto; font-size:11px; color:rgba(238,240,244,.38);">{{ sel.submittedAt }}</span>
+            </div>
+            <h2 style="margin:7px 0 0; font-size:23px; font-weight:600; letter-spacing:-.024em; line-height:1.15;">{{ sel.company }}</h2>
+            <div style="margin-top:9px; display:flex; align-items:center; gap:8px;">
+              <div style="display:flex; align-items:center; gap:7px; height:28px; padding:0 11px; border-radius:14px; background:linear-gradient(150deg, rgba(157,180,255,.24), rgba(109,92,255,.14)); border:1px solid rgba(157,180,255,.28); font-size:12px; font-weight:600;">{{ sel.request }} requested</div>
+              <div style="display:flex; align-items:center; gap:7px; height:28px; padding:0 11px; border-radius:14px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.08); font-size:12px; color:rgba(238,240,244,.70);">Position {{ sel.position }}</div>
+            </div>
+          </div>
+
+          <div style="flex:1; overflow-y:auto; padding:16px 20px 18px; display:flex; flex-direction:column; gap:18px;">
+
+            <div>
+              <div style="font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:rgba(238,240,244,.40); font-weight:600; margin-bottom:9px;">Deal information</div>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:1px; background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.07); border-radius:16px; overflow:hidden;">
+                <sc-for list="{{ sel.fields }}" as="f" hint-placeholder-count="12">
+                  <div style="background:rgba(12,14,19,.42); padding:9px 12px; display:flex; flex-direction:column; gap:2px; min-width:0;">
+                    <span style="font-size:10.5px; letter-spacing:.05em; text-transform:uppercase; color:rgba(238,240,244,.38); font-weight:600;">{{ f.k }}</span>
+                    <span style="font-size:13px; color:{{ f.color }}; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ f.v }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+
+            <div>
+              <div onClick="{{ toggleDocs }}" style="display:flex; align-items:center; gap:8px; margin-bottom:10px; cursor:pointer;">
+                <div style="font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:rgba(238,240,244,.40); font-weight:600;">Documents in payload</div>
+                <div style="display:grid; place-items:center; height:19px; min-width:19px; padding:0 6px; border-radius:7px; font-size:10.5px; font-weight:700; color:#c8d4ff; background:rgba(157,180,255,.18); border:1px solid rgba(157,180,255,.26);">{{ sel.docCount }}</div>
+                <span style="margin-left:auto; font-size:11px; color:rgba(238,240,244,.38);">{{ sel.docPages }} pages</span>
+                <span style="font-size:11px; color:rgba(238,240,244,.45);">{{ docsCaret }}</span>
+              </div>
+              <sc-if value="{{ docsOpen }}" hint-placeholder-val="{{ true }}">
+                <div style="display:flex; flex-direction:column; gap:6px;">
+                  <sc-for list="{{ sel.docs }}" as="doc" hint-placeholder-count="4">
+                    <div onClick="{{ doc.onOpen }}" style="{{ doc.style }}" style-hover="background:rgba(157,180,255,.14); border:1px solid rgba(157,180,255,.28);">
+                      <div style="flex:none; width:30px; height:34px; border-radius:6px; display:grid; place-items:center; font-size:8.5px; font-weight:700; letter-spacing:.05em; color:#ffb3bd; background:linear-gradient(160deg, rgba(255,107,129,.20), rgba(255,107,129,.07)); border:1px solid rgba(255,107,129,.26);">{{ doc.ext }}</div>
+                      <div style="min-width:0; flex:1;">
+                        <div style="font-size:12.5px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ doc.name }}</div>
+                        <div style="font-size:11px; color:rgba(238,240,244,.40); margin-top:2px;">{{ doc.meta }}</div>
+                      </div>
+                      <span style="flex:none; font-size:11.5px; color:rgba(238,240,244,.38);">View</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+            </div>
+
+            <div>
+              <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+                <div style="font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:rgba(238,240,244,.40); font-weight:600;">Seasonality · monthly deposits</div>
+                <span style="margin-left:auto; font-size:11px; color:rgba(238,240,244,.38);">trailing 12</span>
+              </div>
+              <div style="position:relative; height:150px; border-radius:16px; overflow:hidden; background:rgba(12,14,19,.42); border:1px solid rgba(255,255,255,.07);">
+                <image-slot id="seasonality" shape="rect" fit="contain" placeholder="Drop seasonality breakdown .png"></image-slot>
+              </div>
+            </div>
+
+            <div>
+              <div style="font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:rgba(238,240,244,.40); font-weight:600; margin-bottom:9px;">Suggested lenders · auto-matched</div>
+              <div style="display:flex; flex-wrap:wrap; gap:6px;">
+                <sc-for list="{{ sel.lenders }}" as="l" hint-placeholder-count="8">
+                  <div style="{{ l.style }}">{{ l.name }}</div>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:9px;">
+              <div style="font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:rgba(238,240,244,.40); font-weight:600;">Notes</div>
+              <div style="padding:11px 13px; border-radius:14px; background:rgba(12,14,19,.42); border:1px solid rgba(255,255,255,.07); font-size:12.5px; line-height:1.5; color:rgba(238,240,244,.62);">{{ sel.note }}</div>
+              <div style="padding:11px 13px; border-radius:14px; background:linear-gradient(150deg, rgba(255,209,120,.14), rgba(255,209,120,.05)); border:1px solid rgba(255,209,120,.22); font-size:12.5px; line-height:1.5; color:rgba(255,226,171,.86);">
+                <span style="font-weight:700; letter-spacing:.02em;">Sanit's note · </span>{{ sel.sanitNote }}
+              </div>
+            </div>
+          </div>
+
+          <div style="padding:14px 18px 16px; border-top:1px solid rgba(255,255,255,.08); background:linear-gradient(0deg, rgba(6,7,10,.55), rgba(6,7,10,0));">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:11px;">
+              <span style="font-size:11.5px; color:rgba(238,240,244,.42);">Deciding as</span>
+              <div style="display:flex; padding:3px; gap:2px; border-radius:13px; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08);">
+                <sc-for list="{{ reviewers }}" as="r" hint-placeholder-count="2">
+                  <div onClick="{{ r.onClick }}" style="{{ r.style }}">{{ r.name }}</div>
+                </sc-for>
+              </div>
+              <span style="margin-left:auto; font-size:11.5px; color:rgba(238,240,244,.36);">{{ decidedLabel }}</span>
+            </div>
+            <sc-if value="{{ decisionLine }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex; gap:9px;">
+                <div style="{{ decisionStyle }}">{{ decisionLine }}</div>
+              </div>
+            </sc-if>
+            <sc-if value="{{ canDecide }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex; gap:9px;">
+              <div onClick="{{ onReject }}" style="flex:1; height:46px; display:grid; place-items:center; border-radius:16px; cursor:pointer; font-size:14px; font-weight:600; letter-spacing:-.01em; color:#ffb3bd; background:linear-gradient(160deg, rgba(255,90,115,.20), rgba(255,90,115,.07)); border:1px solid rgba(255,120,140,.28); box-shadow:inset 0 1px 0 rgba(255,255,255,.14);" style-hover="background:linear-gradient(160deg, rgba(255,90,115,.32), rgba(255,90,115,.12)); color:#ffd2d8;">Reject</div>
+              <div onClick="{{ onApprove }}" style="flex:2.1; height:46px; display:grid; place-items:center; border-radius:16px; cursor:pointer; font-size:14px; font-weight:600; letter-spacing:-.01em; color:#04140f; background:linear-gradient(160deg,#8ff0d4,#28c9a3); border:1px solid rgba(255,255,255,.32); box-shadow:0 14px 34px -16px rgba(40,201,163,.85), inset 0 1px 0 rgba(255,255,255,.6);" style-hover="background:linear-gradient(160deg,#a6f6e0,#33dcb3);">Approve &amp; auto-submit to {{ sel.lenderCount }} lenders</div>
+            </div>
+            </sc-if>
+          </div>
+        </aside>
+      </div>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:980}}">
+const CHIP = "display:flex;align-items:center;gap:6px;height:26px;padding:0 10px;border-radius:13px;font-size:11.5px;";
+const money = n => "$" + n.toLocaleString();
+
+const DEALS = [
+  { id:1, company:"YNL Fashion Boutique LLC", initials:"YN", industry:"Distributor / Wholesale", state:"IL", tib:"6 yr 2 mo", position:2,
+    request:74000, fico:625, adb:"$11.4k", nsf:3, ago:"4 min ago", submittedAt:"08/10/2026 10:40 AM", assignee:null,
+    email:"greenbutterfly20@yahoo.com", phone:"(312) 555-0148", puller:"Jonathan Montpeirous", rePuller:"None",
+    leadSource:"2023 Mailer — All Avocado — A", revenue:"$84,200 / mo", deposits:"22 / mo", risk:"watch",
+    lenders:["East Harbor","Smartbiz","LoanBud","Newtek","AFB","CashFlo IT","Rapid","Mayfair","Merit Equipment"],
+    season:[38,44,41,52,60,71,66,58,49,55,63,80],
+    note:"Bank statements complete for 4 months. Landlord verification still outstanding.",
+    sanitNote:"Two NSFs cluster in the same week — likely a payroll timing issue, not distress. Worth a call before we send." },
+  { id:2, company:"Brightline Logistics Corp", initials:"BL", industry:"Trucking / Freight", state:"TX", tib:"9 yr 4 mo", position:1,
+    request:150000, fico:702, adb:"$26.8k", nsf:0, ago:"11 min ago", submittedAt:"08/10/2026 10:33 AM", assignee:"Careem",
+    email:"ap@brightlinelog.com", phone:"(214) 555-0192", puller:"Marisol Vega", rePuller:"None",
+    leadSource:"Inbound — Organic search", revenue:"$148,900 / mo", deposits:"41 / mo", risk:"clean",
+    lenders:["East Harbor","Newtek","Rapid","Mayfair","Forward Line","Merit Equipment"],
+    season:[62,58,64,70,75,79,84,88,80,76,82,90],
+    note:"Clean file. Three trucks financed elsewhere, both positions disclosed.",
+    sanitNote:"First position, 700+ FICO — send to the full list, no call needed." },
+  { id:3, company:"Cedar & Co Restaurant Group", initials:"CC", industry:"Food Service", state:"NY", tib:"3 yr 1 mo", position:3,
+    request:48000, fico:588, adb:"$4.1k", nsf:7, ago:"18 min ago", submittedAt:"08/10/2026 10:26 AM", assignee:null,
+    email:"ops@cedarandco.nyc", phone:"N/A", puller:"Jonathan Montpeirous", rePuller:"D. Okoye",
+    leadSource:"2023 Mailer — All Avocado — B", revenue:"$61,400 / mo", deposits:"58 / mo", risk:"high",
+    lenders:["CashFlo IT","LoanBud","Rapid"],
+    season:[70,66,52,44,38,30,28,33,41,48,57,64],
+    note:"Third position requested. Two existing advances still amortizing.",
+    sanitNote:"Seven NSFs and a declining deposit curve. I'd decline unless they can show a July turnaround." },
+  { id:4, company:"Halcyon Dental Partners", initials:"HD", industry:"Healthcare", state:"FL", tib:"12 yr 8 mo", position:1,
+    request:220000, fico:741, adb:"$58.9k", nsf:0, ago:"26 min ago", submittedAt:"08/10/2026 10:18 AM", assignee:null,
+    email:"finance@halcyondental.com", phone:"(305) 555-0177", puller:"Marisol Vega", rePuller:"None",
+    leadSource:"Referral — Partner broker", revenue:"$212,000 / mo", deposits:"31 / mo", risk:"clean",
+    lenders:["East Harbor","Newtek","AFB","Mayfair","Forward Line","Smartbiz","Merit Equipment"],
+    season:[74,78,80,77,82,86,84,88,91,89,93,96],
+    note:"Practice expansion — third operatory build-out. Equipment quotes attached.",
+    sanitNote:"Best file on the desk today. Price it aggressively, Careem." },
+  { id:5, company:"Pike Street Auto Body", initials:"PS", industry:"Auto Repair", state:"WA", tib:"5 yr 7 mo", position:2,
+    request:60000, fico:649, adb:"$8.9k", nsf:2, ago:"41 min ago", submittedAt:"08/10/2026 10:03 AM", assignee:"Sanit",
+    email:"billing@pikestbody.com", phone:"(206) 555-0125", puller:"Devon Reyes", rePuller:"None",
+    leadSource:"2023 Mailer — All Avocado — A", revenue:"$52,300 / mo", deposits:"19 / mo", risk:"watch",
+    lenders:["LoanBud","CashFlo IT","Rapid","Smartbiz","AFB"],
+    season:[48,52,55,59,62,58,54,57,61,64,60,66],
+    note:"Insurance receivables make up 60% of deposits. Aging report requested.",
+    sanitNote:"Second position is fine here. Hold Rapid back — they burned this merchant in 2024." },
+  { id:6, company:"Vantage Modular Build", initials:"VM", industry:"Construction", state:"GA", tib:"4 yr 3 mo", position:4,
+    request:95000, fico:611, adb:"$9.2k", nsf:5, ago:"58 min ago", submittedAt:"08/10/2026 09:46 AM", assignee:null,
+    email:"accounts@vantagemodular.com", phone:"(404) 555-0163", puller:"Devon Reyes", rePuller:"J. Montpeirous",
+    leadSource:"Inbound — Paid social", revenue:"$96,700 / mo", deposits:"27 / mo", risk:"high",
+    lenders:["CashFlo IT","Rapid","LoanBud"],
+    season:[55,60,68,72,66,58,50,46,52,57,49,44],
+    note:"Fourth position. Two liens filed in Q1, both satisfied per merchant.",
+    sanitNote:"Fourth position at 611 is a stretch. Careem, your call — I lean decline." },
+  { id:7, company:"Northgate Print & Signage", initials:"NP", industry:"Printing", state:"OH", tib:"7 yr 5 mo", position:1,
+    request:80000, fico:688, adb:"$18.2k", nsf:1, ago:"Today, 9:12 AM", submittedAt:"08/10/2026 09:12 AM", assignee:"Careem",
+    status:"approved", decision:"Submitted by Careem · 9:31 AM · 6 lenders",
+    email:"ar@northgateprint.com", phone:"(614) 555-0139", puller:"Marisol Vega", rePuller:"None",
+    leadSource:"Referral — Partner broker", revenue:"$91,500 / mo", deposits:"24 / mo", risk:"clean",
+    lenders:["East Harbor","Newtek","Smartbiz","Mayfair","AFB","Forward Line"],
+    season:[60,63,67,70,72,68,74,77,75,79,81,84],
+    note:"Clean four months. Existing equipment lease disclosed.",
+    sanitNote:"No concerns — Careem sent it same morning." },
+  { id:8, company:"Silver Lake Fitness Co", initials:"SL", industry:"Fitness / Gyms", state:"CA", tib:"2 yr 4 mo", position:3,
+    request:55000, fico:574, adb:"$3.4k", nsf:9, ago:"Yesterday, 4:48 PM", submittedAt:"08/09/2026 04:48 PM", assignee:"Sanit",
+    status:"rejected", decision:"Rejected by Sanit · 5:02 PM · NSF volume",
+    email:"owner@silverlakefit.com", phone:"(323) 555-0108", puller:"Devon Reyes", rePuller:"None",
+    leadSource:"Inbound — Paid social", revenue:"$44,800 / mo", deposits:"36 / mo", risk:"high",
+    lenders:["CashFlo IT","Rapid"],
+    season:[58,54,49,44,40,36,33,30,28,31,29,26],
+    note:"Membership churn evident across the last two statements.",
+    sanitNote:"Nine NSFs and a falling deposit trend. Declined — revisit in six months." },
+  { id:9, company:"Harbor Point Marine Supply", initials:"HP", industry:"Retail / Marine", state:"ME", tib:"11 yr 1 mo", position:2,
+    request:130000, fico:715, adb:"$34.6k", nsf:0, ago:"Yesterday, 1:20 PM", submittedAt:"08/09/2026 01:20 PM", assignee:"Sanit",
+    status:"approved", decision:"Submitted by Sanit · 1:44 PM · 7 lenders",
+    email:"finance@harborpointmarine.com", phone:"(207) 555-0154", puller:"Jonathan Montpeirous", rePuller:"None",
+    leadSource:"2023 Mailer — All Avocado — A", revenue:"$168,300 / mo", deposits:"29 / mo", risk:"clean",
+    lenders:["East Harbor","Newtek","AFB","Mayfair","Smartbiz","Forward Line","Merit Equipment"],
+    season:[40,46,58,72,86,94,97,90,74,60,48,42],
+    note:"Strong seasonal peak May–Aug, consistent with marine retail.",
+    sanitNote:"Seasonality is textbook here — priced off summer averages, not trailing three." }
+];
+
+const DOCS = {
+  1:[["Bank statements — Apr–Jul 2026","4 pages · 2.1 MB"],["Signed application","3 pages · 640 KB"],["Driver's license","1 page · 310 KB"],["Voided check","1 page · 122 KB"]],
+  2:[["Bank statements — Apr–Jul 2026","4 pages · 2.6 MB"],["Signed application","3 pages · 701 KB"],["Articles of incorporation","6 pages · 1.4 MB"],["Driver's license","1 page · 288 KB"],["Existing advance payoff letter","2 pages · 410 KB"]],
+  3:[["Bank statements — Apr–Jul 2026","4 pages · 1.8 MB"],["Signed application","3 pages · 622 KB"],["Advance #1 contract","11 pages · 3.2 MB"],["Advance #2 contract","9 pages · 2.7 MB"]],
+  4:[["Bank statements — Apr–Jul 2026","4 pages · 3.0 MB"],["Signed application","3 pages · 655 KB"],["Equipment quote — Henry Schein","5 pages · 1.1 MB"],["Practice P&L 2025","8 pages · 900 KB"],["Driver's license","1 page · 295 KB"],["Voided check","1 page · 118 KB"]],
+  5:[["Bank statements — Apr–Jul 2026","4 pages · 1.9 MB"],["Signed application","3 pages · 610 KB"],["Insurance receivables aging","3 pages · 480 KB"]],
+  6:[["Bank statements — Apr–Jul 2026","4 pages · 2.2 MB"],["Signed application","3 pages · 634 KB"],["Lien release — Q1","2 pages · 360 KB"],["Advance #3 contract","10 pages · 2.9 MB"]],
+  7:[["Bank statements — Apr–Jul 2026","4 pages · 2.4 MB"],["Signed application","3 pages · 618 KB"],["Equipment lease schedule","4 pages · 720 KB"]],
+  8:[["Bank statements — Apr–Jul 2026","4 pages · 1.7 MB"],["Signed application","3 pages · 605 KB"]],
+  9:[["Bank statements — Apr–Jul 2026","4 pages · 2.8 MB"],["Signed application","3 pages · 640 KB"],["Inventory schedule","5 pages · 980 KB"],["Voided check","1 page · 120 KB"]]
+};
+
+const RISK = {
+  clean: { label:"Clean file", bg:"rgba(78,224,181,.16)", bd:"rgba(78,224,181,.30)", fg:"#8ff0d4" },
+  watch: { label:"Watch", bg:"rgba(255,199,102,.15)", bd:"rgba(255,199,102,.28)", fg:"#ffd79a" },
+  high:  { label:"High risk", bg:"rgba(255,107,129,.16)", bd:"rgba(255,107,129,.30)", fg:"#ffb3bd" }
+};
+
+class Component extends DCLogic {
+  state = { deals: DEALS, selId: 1, filter: "Awaiting", reviewer: "Sanit", decided: 0, autoSubmitted: 128, docsOpen: true, viewing: null };
+
+  visible() {
+    const f = this.state.filter;
+    const want = f === "Approved" ? "approved" : f === "Rejected" ? "rejected" : "awaiting";
+    return this.state.deals.filter(d => (d.status || "awaiting") === want);
+  }
+
+  decide(kind) {
+    const status = kind === "approve" ? "approved" : "rejected";
+    const stamp = kind === "approve" ? "Submitted by " + this.state.reviewer + " · just now"
+                                     : "Rejected by " + this.state.reviewer + " · just now";
+    const deals = this.state.deals.map(d => d.id === this.state.selId ? { ...d, status, decision: stamp } : d);
+    const nextUp = deals.find(d => (d.status || "awaiting") === "awaiting");
+    this.setState({
+      deals,
+      selId: nextUp ? nextUp.id : this.state.selId,
+      filter: "Awaiting",
+      decided: this.state.decided + 1,
+      autoSubmitted: this.state.autoSubmitted + (kind === "approve" ? 1 : 0)
+    });
+  }
+
+  renderVals() {
+    const list = this.visible();
+    const sel = this.state.deals.find(d => d.id === this.state.selId) || list[0] || null;
+
+    const counts = {
+      Awaiting: this.state.deals.filter(d => (d.status || "awaiting") === "awaiting").length,
+      Approved: this.state.deals.filter(d => d.status === "approved").length,
+      Rejected: this.state.deals.filter(d => d.status === "rejected").length
+    };
+
+    const filters = ["Awaiting", "Approved", "Rejected"].map(name => ({
+      label: name + "  " + counts[name],
+      onClick: () => this.setState({ filter: name }),
+      style: "padding:0 13px;height:28px;display:grid;place-items:center;border-radius:11px;cursor:pointer;white-space:nowrap;font-size:12.5px;font-weight:" +
+        (this.state.filter === name ? "600" : "500") + ";" +
+        (this.state.filter === name
+          ? "color:#0a0b12;background:linear-gradient(160deg,rgba(255,255,255,.95),rgba(255,255,255,.72));box-shadow:0 6px 16px -8px rgba(255,255,255,.5);"
+          : "color:rgba(238,240,244,.52);")
+    }));
+
+    const reviewers = ["Sanit", "Careem"].map(name => ({
+      name,
+      onClick: () => this.setState({ reviewer: name }),
+      style: "padding:0 12px;height:26px;display:grid;place-items:center;border-radius:10px;cursor:pointer;font-size:12px;font-weight:600;" +
+        (this.state.reviewer === name
+          ? "color:#0a0b12;background:linear-gradient(160deg,rgba(255,255,255,.95),rgba(255,255,255,.74));"
+          : "color:rgba(238,240,244,.50);")
+    }));
+
+    const deals = list.map(d => {
+      const active = sel && d.id === sel.id;
+      const r = RISK[d.risk];
+      return {
+        ...d,
+        request: money(d.request),
+        lenderCount: d.lenders.length,
+        initials: d.initials,
+        onSelect: () => this.setState({ selId: d.id }),
+        cardStyle: "padding:13px 14px;border-radius:20px;cursor:pointer;transition:transform .18s ease, background .18s ease;" +
+          (active
+            ? "background:linear-gradient(160deg,rgba(157,180,255,.20),rgba(255,255,255,.05));border:1px solid rgba(157,180,255,.34);box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 16px 36px -22px rgba(90,120,255,.9);"
+            : "background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.07);"),
+        avatarStyle: "flex:none;width:38px;height:38px;border-radius:13px;display:grid;place-items:center;font-size:12.5px;font-weight:700;letter-spacing:.02em;color:" +
+          r.fg + ";background:" + r.bg + ";border:1px solid " + r.bd + ";",
+        flag: r.label,
+        flagStyle: "flex:none;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:3px 7px;border-radius:8px;color:" +
+          r.fg + ";background:" + r.bg + ";border:1px solid " + r.bd + ";",
+        adb: d.adb,
+        nsfStyle: CHIP + (d.nsf >= 5
+          ? "color:#ffb3bd;background:rgba(255,107,129,.14);border:1px solid rgba(255,107,129,.26);"
+          : "color:rgba(238,240,244,.72);background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.07);"),
+        assignedLabel: d.status === "approved" ? "Approved by " + (d.decidedBy || d.assignee)
+          : d.status === "rejected" ? "Rejected by " + (d.decidedBy || d.assignee) : "",
+        assigneeInitials: d.status === "approved" ? "✓" : d.status === "rejected" ? "✕" : "",
+        assigneeStyle: !d.status ? "display:none;"
+          : "width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:700;" +
+            (d.status === "approved" ? "color:#04120e;background:linear-gradient(150deg,#8ff0d4,#22b894);"
+              : "color:#2a0810;background:linear-gradient(150deg,#ffb3bd,#ff6b81);")
+      };
+    });
+
+    const selVals = sel ? (() => {
+      const r = RISK[sel.risk];
+      const max = Math.max(...sel.season);
+      const dim = "rgba(238,240,244,.86)";
+      return {
+        company: sel.company, submittedAt: "Submitted " + sel.submittedAt, request: money(sel.request),
+        position: sel.position, lenderCount: sel.lenders.length,
+        riskLabel: r.label,
+        riskChipStyle: "display:flex;align-items:center;height:28px;padding:0 11px;border-radius:14px;font-size:12px;font-weight:600;color:" +
+          r.fg + ";background:" + r.bg + ";border:1px solid " + r.bd + ";",
+        fields: [
+          { k:"Company", v:sel.company, color:dim }, { k:"Lead source", v:sel.leadSource, color:dim },
+          { k:"Email", v:sel.email, color:"#9db4ff" }, { k:"Credit score", v:String(sel.fico), color: sel.fico < 620 ? "#ffb3bd" : dim },
+          { k:"Phone", v:sel.phone, color: sel.phone === "N/A" ? "rgba(238,240,244,.35)" : dim },
+          { k:"Industry", v:sel.industry, color:dim },
+          { k:"Puller", v:sel.puller, color:dim }, { k:"Revenue", v:sel.revenue, color:dim },
+          { k:"Re-puller", v:sel.rePuller, color: sel.rePuller === "None" ? "rgba(238,240,244,.35)" : dim },
+          { k:"Avg daily balance", v:sel.adb, color:dim },
+          { k:"State", v:sel.state, color:dim }, { k:"Deposits", v:sel.deposits, color:dim },
+          { k:"Time in business", v:sel.tib, color:dim },
+          { k:"NSFs", v:String(sel.nsf), color: sel.nsf >= 5 ? "#ffb3bd" : dim }
+        ],
+        season: sel.season.map((v, i) => ({
+          label: ["Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug"][i] + " · " + v,
+          style: "flex:1;border-radius:4px 4px 2px 2px;height:" + Math.round((v / max) * 100) + "%;background:linear-gradient(180deg," +
+            (i === sel.season.length - 1 ? "#b9c8ff,#6d5cff" : "rgba(255,255,255,.30),rgba(255,255,255,.10)") + ");"
+        })),
+        lenders: sel.lenders.map((name, i) => ({
+          name,
+          style: "height:27px;padding:0 11px;display:grid;place-items:center;border-radius:13px;font-size:12px;" +
+            (i < 3
+              ? "color:#c8d4ff;background:linear-gradient(150deg,rgba(157,180,255,.20),rgba(109,92,255,.10));border:1px solid rgba(157,180,255,.26);font-weight:600;"
+              : "color:rgba(238,240,244,.62);background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.07);")
+        })),
+        note: sel.note, sanitNote: sel.sanitNote,
+        docs: (DOCS[sel.id] || []).map(([name, meta], i) => ({
+          name, meta, ext: "PDF",
+          onOpen: () => this.setState({ viewing: { name, meta, company: sel.company } }),
+          style: "display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:13px;cursor:pointer;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.07);"
+        })),
+        docCount: (DOCS[sel.id] || []).length,
+        docPages: (DOCS[sel.id] || []).reduce((s, d) => s + parseInt(d[1], 10), 0)
+      };
+    })() : { company:"Nothing to review", submittedAt:"", request:"$0", position:"—", lenderCount:0, riskLabel:"Clear",
+            riskChipStyle:"display:none;", fields:[], season:[], lenders:[], note:"The desk is empty.", sanitNote:"Nothing pending.",
+            docs:[], docCount:0, docPages:0 };
+
+    return {
+      deals, filters, reviewers, sel: selVals,
+      isEmpty: list.length === 0,
+      emptyTitle: this.state.filter === "Awaiting" ? "Queue cleared"
+        : this.state.filter === "Approved" ? "Nothing submitted yet" : "Nothing rejected yet",
+      emptyBody: this.state.filter === "Awaiting"
+        ? "Every submission has a decision. New deals land here automatically."
+        : this.state.filter === "Approved"
+          ? "Approved deals move here once the packet goes out to lenders."
+          : "Rejected deals are kept here with the reviewer who declined them.",
+      canDecide: !!sel && (sel.status || "awaiting") === "awaiting",
+      decisionLine: sel && sel.decision ? sel.decision : "",
+      decisionStyle: sel && sel.status === "approved"
+        ? "flex:1;height:46px;display:grid;place-items:center;border-radius:16px;font-size:13.5px;font-weight:600;color:#8ff0d4;background:linear-gradient(160deg,rgba(78,224,181,.18),rgba(78,224,181,.06));border:1px solid rgba(78,224,181,.30);"
+        : "flex:1;height:46px;display:grid;place-items:center;border-radius:16px;font-size:13.5px;font-weight:600;color:#ffb3bd;background:linear-gradient(160deg,rgba(255,107,129,.18),rgba(255,107,129,.06));border:1px solid rgba(255,107,129,.30);",
+      queueCount: counts.Awaiting,
+      queueVolume: "$" + (this.state.deals.filter(d => (d.status || "awaiting") === "awaiting").reduce((s, d) => s + d.request, 0) / 1000).toFixed(0) + "k",
+      autoSubmitted: this.state.autoSubmitted,
+      decidedLabel: this.state.decided ? this.state.decided + " decided this session" : "No decisions yet",
+      pageTitle: this.state.filter === "Approved" ? "Submitted deals"
+        : this.state.filter === "Rejected" ? "Rejected submissions" : "Awaiting decision",
+      eyebrow: !sel ? "No deal selected"
+        : sel.status === "approved" ? "Submitted to lenders"
+        : sel.status === "rejected" ? "Rejected" : "New deal submitted",
+      eyebrowStyle: "font-size:10px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;color:" +
+        (sel && sel.status === "approved" ? "#8ff0d4" : sel && sel.status === "rejected" ? "#ffb3bd" : "#9db4ff") + ";",
+      docsOpen: this.state.docsOpen,
+      toggleDocs: () => this.setState({ docsOpen: !this.state.docsOpen }),
+      docsCaret: this.state.docsOpen ? "▾" : "▸",
+      viewing: this.state.viewing,
+      viewingName: this.state.viewing ? this.state.viewing.name : "",
+      viewingMeta: this.state.viewing ? this.state.viewing.meta + " · " + this.state.viewing.company : "",
+      closeViewer: () => this.setState({ viewing: null }),
+      onApprove: () => this.decide("approve"),
+      onReject: () => this.decide("reject")
+    };
+  }
+}
+</script>
+</body>
+</html>
