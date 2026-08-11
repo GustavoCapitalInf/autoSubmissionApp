@@ -27,9 +27,12 @@ impl Storage {
             }
             Storage::Supabase { base, service_key, bucket, client } => {
                 // Create the private bucket if it doesn't exist yet.
+                // Both Authorization and apikey headers are sent so legacy
+                // service_role JWTs and new sb_secret_* keys both work.
                 let resp = client
                     .post(format!("{base}/storage/v1/bucket"))
                     .bearer_auth(service_key)
+                    .header("apikey", service_key)
                     .json(&serde_json::json!({ "name": bucket, "public": false }))
                     .send()
                     .await?;
@@ -62,6 +65,7 @@ impl Storage {
                 let resp = client
                     .post(format!("{base}/storage/v1/object/{bucket}/{key}"))
                     .bearer_auth(service_key)
+                    .header("apikey", service_key)
                     .header("Content-Type", content_type)
                     .header("x-upsert", "true")
                     .body(bytes)
@@ -85,6 +89,7 @@ impl Storage {
                 let resp = client
                     .get(format!("{base}/storage/v1/object/{bucket}/{key}"))
                     .bearer_auth(service_key)
+                    .header("apikey", service_key)
                     .send()
                     .await?;
                 if resp.status().is_success() {
