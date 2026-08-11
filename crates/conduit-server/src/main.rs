@@ -51,7 +51,11 @@ impl From<anyhow::Error> for ApiError {
         let msg = e.to_string();
         let code = if msg.contains("not found") {
             StatusCode::NOT_FOUND
-        } else if msg.contains("already decided") || msg.contains("must be") || msg.contains("not valid") {
+        } else if msg.contains("already decided")
+            || msg.contains("must be")
+            || msg.contains("not valid")
+            || msg.contains("required")
+        {
             StatusCode::UNPROCESSABLE_ENTITY
         } else {
             StatusCode::INTERNAL_SERVER_ERROR
@@ -172,9 +176,20 @@ fn require_desk(state: &AppState, headers: &HeaderMap, query: Option<&HashMap<St
 async fn ingest_deal(
     State(state): State<AppState>,
     headers: HeaderMap,
-    Json(payload): Json<IngestDeal>,
+    Json(raw): Json<Value>,
 ) -> Result<impl IntoResponse, ApiError> {
     require_key(presented_key(&headers, None), &state.cfg.ingest_api_key, "ingest")?;
+    // Some webhook relays wrap the record in a top-level `body` key.
+    let record = match &raw {
+        Value::Object(map) if map.contains_key("body") && map["body"].is_object() => &raw["body"],
+        _ => &raw,
+    };
+    let payload: IngestDeal = serde_json::from_value(record.clone()).map_err(|e| {
+        ApiError(
+            StatusCode::UNPROCESSABLE_ENTITY,
+            format!("deal payload not valid: {e}"),
+        )
+    })?;
     let deal = db::create_deal(&state.pool, &state.storage, &payload).await?;
     // Connected desks pop the desktop notification on this event.
     let _ = state
@@ -284,19 +299,26 @@ async fn document_file(
     Query(q): Query<HashMap<String, String>>,
 ) -> Result<Response, ApiError> {
     require_desk(&state, &headers, Some(&q))?;
-    let Some((key, name)) = db::document_file(&state.pool, id).await? else {
+    let Some((key, name, content_type)) = db::document_file(&state.pool, id).await? else {
         return Err(ApiError(
             StatusCode::NOT_FOUND,
             "no file stored for this document".into(),
         ));
     };
     let bytes = state.storage.get(&key).await?;
+    // Text files (CSV bank exports) are served as text/plain so the WebView
+    // previews them inline instead of forcing a download.
+    let serve_type = if content_type.starts_with("text/") {
+        "text/plain; charset=utf-8".to_string()
+    } else {
+        content_type
+    };
     Ok((
         [
-            (header::CONTENT_TYPE, "application/pdf".to_string()),
+            (header::CONTENT_TYPE, serve_type),
             (
                 header::CONTENT_DISPOSITION,
-                format!("inline; filename=\"{}.pdf\"", name.replace('"', "")),
+                format!("inline; filename=\"{}\"", name.replace('"', "")),
             ),
         ],
         bytes,

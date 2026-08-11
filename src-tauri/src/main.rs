@@ -158,14 +158,19 @@ fn notify_new_deal(deal: &Value) {
     let company = deal["company"].as_str().unwrap_or("New deal").to_string();
     let request = deal["request"].as_i64().unwrap_or(0);
     let lenders = deal["lenders"].as_array().map(|l| l.len()).unwrap_or(0);
+    let body = if request > 0 {
+        format!(
+            "{company} — ${} requested · {lenders} lenders matched",
+            format_thousands(request)
+        )
+    } else {
+        format!("{company} — {lenders} lenders matched")
+    };
     std::thread::spawn(move || {
         if let Err(e) = notify_rust::Notification::new()
             .appname("Conduit")
             .summary("New deal submitted for review")
-            .body(&format!(
-                "{company} — ${} requested · {lenders} lenders matched",
-                format_thousands(request)
-            ))
+            .body(&body)
             .show()
         {
             eprintln!("notification failed: {e}");

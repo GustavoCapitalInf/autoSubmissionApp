@@ -39,8 +39,39 @@ const fmtBytes = (b) =>
     ? (b / (1024 * 1024)).toFixed(1) + " MB"
     : Math.max(1, Math.round(b / 1024)) + " KB";
 
-const docMeta = (d) =>
-  `${d.pages} page${d.pages === 1 ? "" : "s"} · ${fmtBytes(d.sizeBytes)}`;
+// "bank_statements" → "Bank statements"
+const categoryLabel = (c) => {
+  const s = String(c || "").replace(/[_-]+/g, " ").trim();
+  return s ? s[0].toUpperCase() + s.slice(1) : "";
+};
+
+// Tile label — the server sniffs the real content type at ingest, so trust
+// it first, then the filename extension, then PDF.
+const docKind = (d) => {
+  const byType = {
+    "application/pdf": "PDF",
+    "text/csv": "CSV",
+    "text/plain": "TXT",
+    "application/json": "JSON",
+    "image/png": "PNG",
+    "image/jpeg": "JPG",
+  }[d.contentType];
+  if (byType) return byType;
+  const ext = (d.name || "").split(".").pop();
+  if (ext && ext.length <= 4 && ext !== d.name) return ext.toUpperCase();
+  return "PDF";
+};
+
+const isPdfDoc = (d) => !d.contentType || d.contentType === "application/pdf";
+
+const docMeta = (d) => {
+  const parts = [];
+  if (d.category) parts.push(categoryLabel(d.category));
+  if (d.pages > 0) parts.push(`${d.pages} page${d.pages === 1 ? "" : "s"}`);
+  if (d.sizeBytes > 0) parts.push(fmtBytes(d.sizeBytes));
+  if (!d.hasFile) parts.push("no file attached");
+  return parts.join(" · ") || "—";
+};
 
 const clock12 = (date) => {
   let h = date.getHours();
@@ -230,7 +261,57 @@ function dealFields(sel) {
   ].join("");
 }
 
+const fmtMoney = (v) =>
+  typeof v === "number" ? "$" + Math.round(v).toLocaleString("en-US") : esc(v);
+
+/// The submission sheet's month-by-month seasonality calc, rendered as a
+/// table. Columns with no data in any row are dropped; Revenue is dropped
+/// when it just mirrors the deposits column.
+function seasonCalcTable(rows) {
+  const cell = (v) => esc(v);
+  const revenueMirrorsDeposits = rows.every(
+    (r) => r?.totalMonthlyRevenue == null || r.totalMonthlyRevenue === r.monthlyDeposits
+  );
+  const cols = [
+    { key: "month", label: "Month", fmt: (v, r) => esc(r?.year ? `${v} ${r.year}` : v) },
+    { key: "monthlyDeposits", label: "Deposits", fmt: fmtMoney },
+    { key: "totalMonthlyRevenue", label: "Revenue", fmt: fmtMoney, skip: revenueMirrorsDeposits },
+    { key: "depositsPerMonth", label: "# Deposits", fmt: cell },
+    { key: "averageDailyBalance", label: "ADB", fmt: fmtMoney },
+    { key: "ledger", label: "Ledger", fmt: fmtMoney },
+    { key: "nsf", label: "NSF", fmt: (v) => `<span class="${Number(v) >= 5 ? "alarm" : ""}">${esc(v)}</span>` },
+  ].filter((c) => !c.skip && rows.some((r) => r && r[c.key] != null && r[c.key] !== ""));
+  const tr = (r) =>
+    `<tr>${cols
+      .map((c) => {
+        const v = r?.[c.key];
+        const empty = v == null || v === "";
+        return `<td>${empty ? '<span class="dim">—</span>' : c.fmt(v, r)}</td>`;
+      })
+      .join("")}</tr>`;
+  return `
+  <div class="season-table-wrap">
+    <table class="season-table">
+      <thead><tr>${cols.map((c) => `<th>${c.label}</th>`).join("")}</tr></thead>
+      <tbody>${rows.map(tr).join("")}</tbody>
+    </table>
+  </div>`;
+}
+
 function seasonalitySection(sel) {
+  const calcRows = Array.isArray(sel.seasonCalc)
+    ? sel.seasonCalc.filter((r) => r && typeof r === "object")
+    : [];
+  if (calcRows.length) {
+    return `
+  <div>
+    <div class="section-head">
+      <div class="section-label">Seasonality · monthly deposits</div>
+      <span class="section-head-note">${calcRows.length} month${calcRows.length === 1 ? "" : "s"}</span>
+    </div>
+    <div class="season-frame calc">${seasonCalcTable(calcRows)}</div>
+  </div>`;
+  }
   let body;
   if (sel.hasSeasonalityImage) {
     body = `<img src="${seasonalityUrl(sel.id)}" alt="Seasonality breakdown">`;
@@ -264,7 +345,7 @@ function docsSection(sel) {
         .map(
           (doc) => `
       <div class="doc-row" data-action="open-doc" data-doc-id="${doc.id}">
-        <div class="pdf-tile">PDF</div>
+        <div class="pdf-tile">${esc(docKind(doc))}</div>
         <div class="doc-main">
           <div class="doc-name">${esc(doc.name)}</div>
           <div class="doc-meta">${docMeta(doc)}</div>
@@ -279,7 +360,7 @@ function docsSection(sel) {
     <div class="section-head docs-head" data-action="toggle-docs">
       <div class="section-label">Documents in payload</div>
       <div class="doc-count">${docs.length}</div>
-      <span class="section-head-note">${totalPages} pages</span>
+      <span class="section-head-note">${totalPages > 0 ? `${totalPages} pages` : ""}</span>
       <span class="docs-caret">${state.docsOpen ? "▾" : "▸"}</span>
     </div>
     ${rows}
@@ -424,7 +505,7 @@ function renderOverlay() {
   <div class="overlay" data-action="close-viewer">
     <div class="pdf-dialog" data-stop-close>
       <div class="pdf-dialog-header">
-        <div class="pdf-tile">PDF</div>
+        <div class="pdf-tile">${esc(v.kind || "PDF")}</div>
         <div class="pdf-dialog-title">
           <div class="pdf-dialog-name">${esc(v.name)}</div>
           <div class="pdf-dialog-meta">${esc(v.meta)} · ${esc(v.company)}</div>
@@ -436,12 +517,39 @@ function renderOverlay() {
       </div>
       <div class="pdf-dialog-body">
         <div class="pdf-page-frame" id="pdf-page-frame">
-          <div class="pdf-loading">${v.hasFile ? "Loading document…" : "PDF page renders here"}</div>
+          <div class="pdf-loading">${v.hasFile ? "Loading document…" : "No file arrived with this document"}</div>
         </div>
       </div>
     </div>
   </div>`;
-  if (v.hasFile) loadPdf(docFileUrl(v.docId));
+  if (!v.hasFile) return;
+  const url = docFileUrl(v.docId);
+  if (v.isPdf) loadPdf(url);
+  else if (v.isImage) {
+    document.getElementById("pdf-page-frame").innerHTML =
+      `<img src="${url}" alt="${esc(v.name)}" style="max-width:100%;display:block;margin:0 auto;">`;
+  } else loadTextPreview(url);
+}
+
+/// Non-PDF files (CSV bank exports, plain text) — fetched and shown as
+/// preformatted text inside the same dialog.
+async function loadTextPreview(url) {
+  const frame = document.getElementById("pdf-page-frame");
+  try {
+    const resp = await fetch(url);
+    if (!resp.ok) throw new Error(`service answered ${resp.status}`);
+    const text = await resp.text();
+    const current = document.getElementById("pdf-page-frame");
+    if (!current) return; // overlay closed
+    current.innerHTML = `<pre class="text-preview">${esc(text)}</pre>`;
+  } catch (e) {
+    console.error("text preview failed, falling back to <embed>:", e);
+    const current = document.getElementById("pdf-page-frame");
+    if (current) {
+      current.innerHTML = `<embed src="${url}"
+        style="width:100%;height:100%;min-height:640px;">`;
+    }
+  }
 }
 
 async function loadPdf(url) {
@@ -529,6 +637,9 @@ function openDoc(docId) {
     meta: docMeta(doc),
     company: sel.company,
     hasFile: doc.hasFile,
+    kind: docKind(doc),
+    isPdf: isPdfDoc(doc),
+    isImage: (doc.contentType || "").startsWith("image/"),
   };
   renderOverlay();
 }
