@@ -321,9 +321,19 @@ pub async fn seed_if_empty(pool: &PgPool, storage: &Storage) -> Result<bool> {
 
         for (i, (name, pages, size)) in deal.docs.iter().enumerate() {
             let key = format!("documents/{deal_id}/{i}-seed.pdf");
-            storage
+            // Demo filler only — a storage hiccup here must not take down the
+            // whole server. Record the document without a file rather than
+            // aborting startup; the desk shows it, "View" just won't work.
+            let stored_key = match storage
                 .put(&key, placeholder_pdf(name, *pages as usize), "application/pdf")
-                .await?;
+                .await
+            {
+                Ok(()) => Some(key),
+                Err(e) => {
+                    eprintln!("warning: seed upload for '{name}' failed, skipping file: {e}");
+                    None
+                }
+            };
             sqlx::query(
                 "INSERT INTO documents (deal_id, name, pages, size_bytes, storage_key) \
                  VALUES ($1,$2,$3,$4,$5)",
@@ -332,7 +342,7 @@ pub async fn seed_if_empty(pool: &PgPool, storage: &Storage) -> Result<bool> {
             .bind(name)
             .bind(pages)
             .bind(size)
-            .bind(&key)
+            .bind(&stored_key)
             .execute(pool)
             .await?;
         }
