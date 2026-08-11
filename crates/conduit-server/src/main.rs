@@ -17,7 +17,7 @@ use std::collections::HashMap;
 use std::net::SocketAddr;
 use std::sync::Arc;
 
-use axum::extract::{Path, Query, State};
+use axum::extract::{DefaultBodyLimit, Path, Query, State};
 use axum::http::{header, HeaderMap, StatusCode};
 use axum::response::sse::{Event, KeepAlive, Sse};
 use axum::response::{IntoResponse, Response};
@@ -129,6 +129,9 @@ async fn main() -> anyhow::Result<()> {
         .route("/api/documents/{id}/file", get(document_file))
         .route("/api/stats", get(stats))
         .route("/api/events", get(events))
+        // Deal payloads carry base64 PDFs — axum's default 2 MB body cap is
+        // far too small for a real submission packet.
+        .layer(DefaultBodyLimit::max(64 * 1024 * 1024))
         // Desks are WebViews on other origins; endpoints are key-authed.
         .layer(CorsLayer::permissive())
         .with_state(state);
