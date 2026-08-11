@@ -1,0 +1,41 @@
+# Render blueprint for the hosted conduit-server.
+# Dashboard → New → Blueprint → pick this repo, then fill the sync:false
+# secrets (Supabase values) when prompted.
+#
+# Free plan note: the service spins down after ~15 min idle and cold-starts
+# in ~30-60s. Fine for testing; upgrade the plan (or ping /health on a cron)
+# for a showcase where the first request must be instant.
+
+services:
+  - type: web
+    name: conduit-server
+    runtime: docker
+    dockerfilePath: ./Dockerfile.server
+    plan: free
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      # Supabase Postgres — SESSION pooler string (port 5432), not the
+      # transaction pooler. Set in the Render dashboard.
+      - key: DATABASE_URL
+        sync: false
+      # Supabase Storage — required on Render: the container filesystem is
+      # ephemeral, so local-disk file storage would lose PDFs on every
+      # deploy/restart while the database rows survive.
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_KEY
+        sync: false
+      # API keys — Render generates strong random values on first deploy.
+      # Read them from the service's Environment tab afterwards: the ingest
+      # key goes to the external API, the desk key to the reviewer apps.
+      - key: CONDUIT_INGEST_KEY
+        generateValue: true
+      - key: CONDUIT_DESK_KEY
+        generateValue: true
+      # Demo queue for showcases; set to false for production.
+      - key: SEED_DEMO
+        value: "true"
+      # Reviewer-local timezone for decision stamps.
+      - key: TZ
+        value: America/New_York

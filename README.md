@@ -55,6 +55,13 @@ reviewers on different machines can't double-decide a deal.
    reviewers' timezone (decision stamps like "Submitted by Santi · 9:31 AM"
    use it).
 4. Run the service anywhere that can reach Supabase:
+   - **Render** (easiest): push the repo to GitHub, then Render →
+     **New → Blueprint** → select the repo. [`render.yaml`](render.yaml)
+     defines the service; paste the Supabase values when prompted and Render
+     generates the two API keys for you (read them from the service's
+     Environment tab). On Render, Supabase Storage is **required** — the
+     container disk is wiped on every deploy. Free plan sleeps after ~15 min
+     idle (30–60s cold start); upgrade for always-on.
    - **Docker** (any VPS / container platform):
      `docker build -f Dockerfile.server -t conduit-server . && docker run --env-file .env -p 4820:4820 conduit-server`
    - **Bare binary**: `cargo build --release -p conduit-server`, run it with
