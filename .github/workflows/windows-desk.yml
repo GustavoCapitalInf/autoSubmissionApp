@@ -49,8 +49,12 @@ jobs:
         uses: cargo-bins/cargo-binstall@main
       - run: cargo binstall tauri-cli --no-confirm
 
+      # NSIS only: reviewers install the *-setup.exe. The MSI bundler needs
+      # the WiX toolset, whose 39 MB download from the wixtoolset GitHub
+      # release repeatedly drops mid-transfer on hosted runners. Restore
+      # `cargo tauri build` (all bundlers) if the MSI is ever needed.
       - name: Build installer
-        run: cargo tauri build
+        run: cargo tauri build --bundles nsis
 
       - name: Collect bundles
         shell: bash
