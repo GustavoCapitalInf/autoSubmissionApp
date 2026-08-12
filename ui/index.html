@@ -3,6 +3,22 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>
+    // Apply the persisted theme before the stylesheet parses and the bundle
+    // mounts, so there is no flash of the wrong theme. localStorage is the
+    // fast synchronous cache; the app reconciles against the Rust-side
+    // settings store on boot (survives a WebView data reset). With nothing
+    // stored, seed from the OS appearance.
+    (function () {
+      let theme = null;
+      try { theme = localStorage.getItem("capdesk-theme"); } catch (e) {}
+      if (theme !== "light" && theme !== "dark") {
+        theme = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches
+          ? "dark" : "light";
+      }
+      document.documentElement.dataset.theme = theme;
+    })();
+  </script>
   <title>CapDesk — Submission Desk</title>
   <link rel="stylesheet" href="styles.css">
 </head>
@@ -37,6 +53,14 @@
           <span class="nav-label">Submission desk</span>
           <div class="nav-tip">Submission desk</div>
         </div>
+      </div>
+
+      <div class="side-theme">
+        <button class="theme-row" data-action="toggle-theme" data-page="theme">
+          <span class="nav-icon" id="theme-icon"></span>
+          <span class="nav-label" id="theme-label">Dark mode</span>
+          <div class="nav-tip" id="theme-tip">Dark mode</div>
+        </button>
       </div>
 
       <div class="side-foot">

@@ -98,6 +98,37 @@ async fn post_decision(state: &Desk, id: i64, action: &str, body: Value) -> Resu
     }
 }
 
+/// UI settings live in a small JSON file in the app's data directory so a
+/// preference (currently just the theme) survives a WebView data reset.
+fn ui_settings_path() -> Option<std::path::PathBuf> {
+    conduit_core::data_dir().ok().map(|dir| dir.join("ui-settings.json"))
+}
+
+#[tauri::command]
+fn get_theme() -> Option<String> {
+    let text = std::fs::read_to_string(ui_settings_path()?).ok()?;
+    let settings: Value = serde_json::from_str(&text).ok()?;
+    match settings["theme"].as_str() {
+        Some(theme @ ("light" | "dark")) => Some(theme.to_string()),
+        _ => None,
+    }
+}
+
+#[tauri::command]
+fn set_theme(theme: String) -> Result<(), String> {
+    if theme != "light" && theme != "dark" {
+        return Err(format!("unknown theme {theme:?}"));
+    }
+    let path = ui_settings_path().ok_or("could not resolve the data directory")?;
+    let mut settings = std::fs::read_to_string(&path)
+        .ok()
+        .and_then(|text| serde_json::from_str::<Value>(&text).ok())
+        .filter(Value::is_object)
+        .unwrap_or_else(|| json!({}));
+    settings["theme"] = json!(theme);
+    std::fs::write(&path, serde_json::to_string_pretty(&settings).map_err(err)?).map_err(err)
+}
+
 #[tauri::command]
 async fn approve_deal(state: State<'_, Desk>, id: i64, reviewer: String) -> Result<Value, String> {
     post_decision(&state, id, "approve", json!({ "reviewer": reviewer })).await
@@ -234,7 +265,13 @@ fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .manage(desk)
-        .invoke_handler(tauri::generate_handler![desk_state, approve_deal, reject_deal])
+        .invoke_handler(tauri::generate_handler![
+            desk_state,
+            approve_deal,
+            reject_deal,
+            get_theme,
+            set_theme
+        ])
         .setup(move |app| {
             let handle = app.handle().clone();
             tauri::async_runtime::spawn(async move {

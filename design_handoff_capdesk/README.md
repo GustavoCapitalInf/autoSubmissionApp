@@ -25,7 +25,10 @@ The screen answers three questions:
   1440 × 980 and breaks below 1280 wide.
 - **No `backdrop-filter` dependency.** This design is flat by request: solid fills, hairline
   borders, one soft shadow. The only blur in the file is the PDF overlay scrim, and a solid
-  `rgba(20,40,28,.45)` fill is an acceptable substitute on WebKitGTK.
+  `--scrim` fill is an acceptable substitute on WebKitGTK.
+- **Theme:** apply the stored `data-theme` in an inline `<head>` script before the bundle mounts
+  so there is no flash of the wrong theme; consider seeding it from the OS appearance on first
+  run. Persist through the app's settings store rather than `localStorage`.
 - Keep the state table below in the frontend; treat Rust as the source of truth and reconcile
   after each mutation.
 
@@ -43,6 +46,13 @@ colors, and copy; write normal components.
 **High fidelity.** Colors, type sizes, radii, spacing, and copy are final and should be matched
 closely. Everything in "Design Tokens" is exact. Deal data is realistic placeholder content —
 replace with real payload data.
+
+> **Theming:** the app ships **light and dark themes plus a sidebar toggle**. Every color resolves
+> through a CSS custom property; `data-theme="dark"` on the document root flips the whole UI.
+> **`THEMING.md` in this folder is the authority** for the 48-token set, the dark values, the dark
+> theme rules, the PDF-icon treatment, and the toggle's markup and behavior. Where the color
+> tables below give a light hex, that hex is the light value of a token — read `THEMING.md` for
+> its name and dark counterpart.
 
 ---
 
@@ -112,11 +122,15 @@ box-shadow: 0 6px 18px -10px rgba(16,42,26,.6);
 It shows the page name and never appears when the sidebar is expanded. Drive it from a
 `navHover` state value, not CSS `:hover` on a sibling.
 
-**Footer** — `margin-top: auto`, `padding-top: 14px`, `border-top: 1px solid rgba(16,42,26,.07)`,
+**Footer** — `padding-top: 14px`, `border-top: 1px solid rgba(16,42,26,.07)`,
 `display: flex; align-items: center; gap: 10px` (collapsed: `justify-content: center`).
 A 32px round avatar (`background: #E4F2E8`, `color: #1B8F4F`, 11px/700 initials) showing the
 active reviewer, plus — expanded only — their name (12.5px/600) and "Reviewer"
 (11px `rgba(16,35,26,.45)`).
+
+**Theme toggle** — a nav-styled row directly above the footer, pushed down with `margin-top: auto`
+and `padding-bottom: 10px`. Full spec (metrics, sun/moon icons, label, tooltip, persistence) in
+`THEMING.md` §5.
 
 ### Component: Header
 `display: flex; align-items: center; gap: 16px`.
@@ -332,6 +346,8 @@ Dialog **840 × 840**, `border-radius: 26px`, `background: #FFFFFF`,
 - **Switch tabs** — Awaiting / Approved / Rejected filters the list by status; the H1 follows.
 - **Toggle the sidebar** — the header toggle switches 64px ↔ 232px; labels, logo, wordmark and
   the footer name fade in with the expansion. Collapsed shows tooltips on icon hover.
+- **Toggle the theme** — the sidebar's bottom nav row flips light ↔ dark instantly and persists
+  the choice (`THEMING.md`).
 - **Toggle documents** — clicking the "Documents Submitted" header collapses/expands the list.
 - **Open a document** — opens the PDF overlay for that file.
 - **Switch reviewer** — the Santi / Careem control sets who the decision is attributed to. This
@@ -365,6 +381,7 @@ Dialog **840 × 840**, `border-radius: 26px`, `background: #FFFFFF`,
 | `navOpen` | bool | Sidebar expanded. |
 | `navPage` | string | Active nav destination. |
 | `navHover` | string \| null | Nav item under the cursor — drives the collapsed tooltip. |
+| `theme` | `light` \| `dark` | Active theme; mirrored onto `data-theme` and persisted as `capdesk-theme`. See `THEMING.md`. |
 
 **Card click must not toggle.** A toggling handler (`selId === d.id ? null : d.id`) broke in the
 prototype: the click handler fired twice, the second dispatch read the re-rendered closure where
@@ -465,8 +482,10 @@ note blocks, document rows), 16 (buttons, field grid), 19–20 (search, stat car
 - No fonts to bundle — system stack only.
 
 ## Files
+- `README.md` — this file: layout, components, interactions, state, tokens.
+- `THEMING.md` — light/dark token set, dark-theme rules, and the sidebar theme toggle.
 - `CapDesk Dashboard.dc.html` — the full design (markup + all styling + prototype logic). Deal
   data, the documents map, and the decision logic live in the `class Component` script block at
-  the bottom.
+  the bottom; the token blocks are at the top of `<helmet>`.
 - `assets/logo.png`, `assets/pdf-icon.png` — real assets, use them.
 - `support.js`, `image-slot.js` — prototype runtime only. **Do not port; do not ship.**

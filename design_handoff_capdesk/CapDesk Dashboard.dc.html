@@ -9,30 +9,130 @@
 <x-dc>
 <helmet>
 <style>
-body { margin:0; background:#EDF3EE; color:#10231A; font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Helvetica Neue",Helvetica,sans-serif; -webkit-font-smoothing:antialiased; }
-a { color:#1FA75C; text-decoration:none } a:hover { color:#17864A }
-::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-thumb{background:rgba(16,42,26,.16);border-radius:8px}::-webkit-scrollbar-track{background:transparent}
+:root {
+  --surface: #FFFFFF;
+  --tooltip-bg: #10231A;
+  --tooltip-ink: #FFFFFF;
+  --pdf-filter: none;
+  --canvas: #EDF3EE;
+  --sunken: #FAFCFA;
+  --row: #F7FAF7;
+  --viewer: #F6F9F6;
+  --chip: #F2F6F2;
+  --track: #EEF3EE;
+  --btn: #EDF1EE;
+  --btn-hover: #E3E9E4;
+  --emphasis: #E6ECE7;
+  --green-card: #EBF6EE;
+  --green-tint: #E4F2E8;
+  --ink: #10231A;
+  --ink-muted: #42604E;
+  --ink-muted-2: #5B6B60;
+  --note-ink: #25543A;
+  --green-text: #1B8F4F;
+  --green-link: #1FA75C;
+  --green-link-h: #17864A;
+  --green: #2E9E58;
+  --green-hover: #278A4C;
+  --row-hover: rgba(52,199,89,.10);
+  --row-hover-bd: rgba(52,199,89,.30);
+  --scrim: rgba(20,40,28,.28);
+  --ink-45: rgba(16,35,26,.45);
+  --ink-55: rgba(16,35,26,.55);
+  --ink-35: rgba(16,35,26,.35);
+  --ink-38: rgba(16,35,26,.38);
+  --ink-50: rgba(16,35,26,.50);
+  --ink-48: rgba(16,35,26,.48);
+  --ink-40: rgba(16,35,26,.40);
+  --ink-72: rgba(16,35,26,.72);
+  --ink-42: rgba(16,35,26,.42);
+  --ink-65: rgba(16,35,26,.65);
+  --ink-52: rgba(16,35,26,.52);
+  --ink-82: rgba(16,35,26,.82);
+  --line-16: rgba(16,42,26,.16);
+  --line-08: rgba(16,42,26,.08);
+  --line-45: rgba(16,42,26,.45);
+  --line-07: rgba(16,42,26,.07);
+  --line-04: rgba(16,42,26,.04);
+  --line-40: rgba(16,42,26,.40);
+  --line-14: rgba(16,42,26,.14);
+  --line-09: rgba(16,42,26,.09);
+  --line-6: rgba(16,42,26,.6);
+}
+:root[data-theme="dark"] {
+  --surface: #161D19;
+  --tooltip-bg: #E7EEE9;
+  --tooltip-ink: #0E1411;
+  --pdf-filter: invert(1) brightness(1.15);
+  --canvas: #0E1411;
+  --sunken: #1A221D;
+  --row: #1A221D;
+  --viewer: #121815;
+  --chip: #212A24;
+  --track: #121915;
+  --btn: #232C27;
+  --btn-hover: #2B352E;
+  --emphasis: #2B352E;
+  --green-card: #16261D;
+  --green-tint: #173021;
+  --ink: #E7EEE9;
+  --ink-muted: #B7C8BD;
+  --ink-muted-2: #93A599;
+  --note-ink: #A9DCBB;
+  --green-text: #4FCB85;
+  --green-link: #4FCB85;
+  --green-link-h: #7BE0AB;
+  --green: #2FA45D;
+  --green-hover: #37B96C;
+  --row-hover: rgba(79,203,133,.12);
+  --row-hover-bd: rgba(79,203,133,.34);
+  --scrim: rgba(0,0,0,.58);
+  --ink-45: rgba(223,235,227,.45);
+  --ink-55: rgba(223,235,227,.55);
+  --ink-35: rgba(223,235,227,.35);
+  --ink-38: rgba(223,235,227,.38);
+  --ink-50: rgba(223,235,227,.50);
+  --ink-48: rgba(223,235,227,.48);
+  --ink-40: rgba(223,235,227,.40);
+  --ink-72: rgba(223,235,227,.72);
+  --ink-42: rgba(223,235,227,.42);
+  --ink-65: rgba(223,235,227,.65);
+  --ink-52: rgba(223,235,227,.52);
+  --ink-82: rgba(223,235,227,.82);
+  --line-16: rgba(255,255,255,.16);
+  --line-08: rgba(255,255,255,.08);
+  --line-45: rgba(0,0,0,.75);
+  --line-07: rgba(255,255,255,.07);
+  --line-04: rgba(0,0,0,.34);
+  --line-40: rgba(0,0,0,.70);
+  --line-14: rgba(0,0,0,.45);
+  --line-09: rgba(255,255,255,.09);
+  --line-6: rgba(0,0,0,.75);
+}
+body { margin:0; background:var(--canvas); color:var(--ink); font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Helvetica Neue",Helvetica,sans-serif; -webkit-font-smoothing:antialiased; }
+a { color:var(--green-link); text-decoration:none } a:hover { color:var(--green-link-h) }
+::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-thumb{background:var(--line-16);border-radius:8px}::-webkit-scrollbar-track{background:transparent}
 </style>
 <script src="./image-slot.js"></script>
 </helmet>
-<div style="position:relative; width:1440px; min-width:1440px; flex:none; flex-shrink:0; height:980px; overflow:hidden; background:#EDF3EE;">
+<div style="position:relative; width:1440px; min-width:1440px; flex:none; flex-shrink:0; height:980px; overflow:hidden; background:var(--canvas);">
 
   <sc-if value="{{ viewing }}" hint-placeholder-val="{{ false }}">
-    <div style="position:absolute; inset:0; z-index:40; display:grid; place-items:center; background:rgba(20,40,28,.28); backdrop-filter:blur(18px) saturate(140%); -webkit-backdrop-filter:blur(18px) saturate(140%);">
-      <div style="width:840px; height:840px; display:flex; flex-direction:column; border-radius:26px; overflow:hidden; background:#FFFFFF; border:1px solid rgba(16,42,26,.08); box-shadow:0 40px 90px -40px rgba(16,42,26,.45);">
-        <div style="display:flex; align-items:center; gap:12px; padding:15px 18px; border-bottom:1px solid rgba(16,42,26,.08);">
-          <img src="assets/pdf-icon.png" alt="PDF" style="flex:none; width:32px; height:32px; object-fit:contain; display:block;" />
+    <div style="position:absolute; inset:0; z-index:40; display:grid; place-items:center; background:var(--scrim); backdrop-filter:blur(18px) saturate(140%); -webkit-backdrop-filter:blur(18px) saturate(140%);">
+      <div style="width:840px; height:840px; display:flex; flex-direction:column; border-radius:26px; overflow:hidden; background:var(--surface); border:1px solid var(--line-08); box-shadow:0 40px 90px -40px var(--line-45);">
+        <div style="display:flex; align-items:center; gap:12px; padding:15px 18px; border-bottom:1px solid var(--line-08);">
+          <img src="assets/pdf-icon.png" alt="PDF" style="flex:none; width:32px; height:32px; object-fit:contain; display:block; filter:var(--pdf-filter);" />
           <div style="min-width:0;">
             <div style="font-size:14.5px; font-weight:600; letter-spacing:-.012em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ viewingName }}</div>
-            <div style="font-size:11.5px; color:rgba(16,35,26,.45); margin-top:2px;">{{ viewingMeta }}</div>
+            <div style="font-size:11.5px; color:var(--ink-45); margin-top:2px;">{{ viewingMeta }}</div>
           </div>
           <div style="margin-left:auto; display:flex; align-items:center; gap:8px;">
-            <div style="height:32px; padding:0 14px; display:grid; place-items:center; border-radius:16px; cursor:pointer; font-size:12.5px; font-weight:500; color:#10231A; background:#F1F5F1; border:1px solid rgba(16,42,26,.08);">Download</div>
-            <div onClick="{{ closeViewer }}" style="width:32px; height:32px; display:grid; place-items:center; border-radius:16px; cursor:pointer; font-size:14px; color:rgba(16,35,26,.55); background:#F1F5F1; border:1px solid rgba(16,42,26,.08);">✕</div>
+            <div style="height:32px; padding:0 14px; display:grid; place-items:center; border-radius:16px; cursor:pointer; font-size:12.5px; font-weight:500; color:var(--ink); background:var(--chip); border:1px solid var(--line-08);">Download</div>
+            <div onClick="{{ closeViewer }}" style="width:32px; height:32px; display:grid; place-items:center; border-radius:16px; cursor:pointer; font-size:14px; color:var(--ink-55); background:var(--chip); border:1px solid var(--line-08);">✕</div>
           </div>
         </div>
-        <div style="flex:1; min-height:0; padding:18px; overflow-y:auto; background:#F6F9F6;">
-          <div style="position:relative; width:100%; height:100%; min-height:640px; border-radius:14px; overflow:hidden; background:#FFFFFF; border:1px solid rgba(16,42,26,.08);">
+        <div style="flex:1; min-height:0; padding:18px; overflow-y:auto; background:var(--viewer);">
+          <div style="position:relative; width:100%; height:100%; min-height:640px; border-radius:14px; overflow:hidden; background:var(--surface); border:1px solid var(--line-08);">
             <image-slot id="pdf-preview" shape="rect" fit="contain" placeholder="PDF page renders here"></image-slot>
           </div>
         </div>
@@ -50,7 +150,7 @@ a { color:#1FA75C; text-decoration:none } a:hover { color:#17864A }
             <span style="font-size:17px; font-weight:700; letter-spacing:-.022em; line-height:1; white-space:nowrap;">CapDesk</span>
           </div>
         </sc-if>
-        <div onClick="{{ toggleNav }}" title="Toggle sidebar" style="{{ toggleStyle }}" style-hover="color:#10231A;">
+        <div onClick="{{ toggleNav }}" title="Toggle sidebar" style="{{ toggleStyle }}" style-hover="color:var(--ink);">
           <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"></rect><path d="M9 4v16"></path></svg>
         </div>
       </div>
@@ -67,12 +167,27 @@ a { color:#1FA75C; text-decoration:none } a:hover { color:#17864A }
         
       </div>
 
+      <div style="{{ themeRowWrapStyle }}">
+        <div onClick="{{ toggleTheme }}" onMouseEnter="{{ onThemeEnter }}" onMouseLeave="{{ onNavLeave }}" style="{{ themeBtnStyle }}">
+          <div style="flex:none; display:grid; place-items:center; width:22px; height:22px;">
+            <sc-if value="{{ themeDark }}" hint-placeholder-val="{{ false }}">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2.8v2.1M12 19.1v2.1M2.8 12h2.1M19.1 12h2.1M5.5 5.5l1.5 1.5M17 17l1.5 1.5M18.5 5.5 17 7M7 17l-1.5 1.5"></path></svg>
+            </sc-if>
+            <sc-if value="{{ themeLight }}" hint-placeholder-val="{{ true }}">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 14.2A8.6 8.6 0 0 1 9.8 3.5a8.7 8.7 0 1 0 10.7 10.7z"></path></svg>
+            </sc-if>
+          </div>
+          <sc-if value="{{ navOpen }}" hint-placeholder-val="{{ false }}"><span style="font-size:13.5px; font-weight:500; letter-spacing:-.008em; white-space:nowrap;">{{ themeLabel }}</span></sc-if>
+          <sc-if value="{{ themeTip }}" hint-placeholder-val="{{ false }}"><div style="{{ tipStyle }}">{{ themeLabel }}</div></sc-if>
+        </div>
+      </div>
+
       <div style="{{ navFootStyle }}">
-        <div style="flex:none; width:32px; height:32px; border-radius:50%; background:#E4F2E8; display:grid; place-items:center; font-size:11px; font-weight:700; color:#1B8F4F;">{{ reviewerInitials }}</div>
+        <div style="flex:none; width:32px; height:32px; border-radius:50%; background:var(--green-tint); display:grid; place-items:center; font-size:11px; font-weight:700; color:var(--green-text);">{{ reviewerInitials }}</div>
         <sc-if value="{{ navOpen }}" hint-placeholder-val="{{ false }}">
           <div style="min-width:0;">
             <div style="font-size:12.5px; font-weight:600; white-space:nowrap;">{{ reviewerName }}</div>
-            <div style="font-size:11px; color:rgba(16,35,26,.45); white-space:nowrap;">Reviewer</div>
+            <div style="font-size:11px; color:var(--ink-45); white-space:nowrap;">Reviewer</div>
           </div>
         </sc-if>
       </div>
@@ -85,45 +200,45 @@ a { color:#1FA75C; text-decoration:none } a:hover { color:#17864A }
           <h1 style="margin:4px 0 0; font-size:27px; line-height:1.1; font-weight:700; letter-spacing:-.026em;">{{ pageTitle }}</h1>
         </div>
         <div style="margin-left:auto; display:flex; align-items:center; gap:10px;">
-          <div style="display:flex; align-items:center; gap:9px; height:38px; padding:0 14px; border-radius:19px; background:#FFFFFF; border:1px solid rgba(16,42,26,.07); box-shadow:0 1px 2px rgba(16,42,26,.04); width:280px;">
-            <span style="color:rgba(16,35,26,.35); font-size:13px;">⌕</span>
-            <span style="font-size:13px; color:rgba(16,35,26,.38);">Search deals</span>
+          <div style="display:flex; align-items:center; gap:9px; height:38px; padding:0 14px; border-radius:19px; background:var(--surface); border:1px solid var(--line-07); box-shadow:0 1px 2px var(--line-04); width:280px;">
+            <span style="color:var(--ink-35); font-size:13px;">⌕</span>
+            <span style="font-size:13px; color:var(--ink-38);">Search deals</span>
           </div>
         </div>
       </header>
 
       <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:12px;">
-        <div style="display:flex; align-items:center; gap:13px; padding:15px 17px; border-radius:20px; background:#FFFFFF; border:1px solid rgba(16,42,26,.07);">
-          <div style="flex:none; width:38px; height:38px; border-radius:12px; display:grid; place-items:center; color:#42604E; background:#EEF3EF;">
+        <div style="display:flex; align-items:center; gap:13px; padding:15px 17px; border-radius:20px; background:var(--surface); border:1px solid var(--line-07);">
+          <div style="flex:none; width:38px; height:38px; border-radius:12px; display:grid; place-items:center; color:var(--ink-muted); background:var(--chip);">
             <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"></path><path d="M4 12h16"></path><path d="M4 17h10"></path></svg>
           </div>
           <div style="min-width:0;">
             <div style="display:flex; align-items:baseline; gap:6px;">
               <span style="font-size:26px; font-weight:700; letter-spacing:-.03em; line-height:1;">{{ queueCount }}</span>
-              <span style="font-size:12px; color:rgba(16,35,26,.45);">deals</span>
+              <span style="font-size:12px; color:var(--ink-45);">deals</span>
             </div>
-            <div style="margin-top:4px; font-size:12px; font-weight:500; color:rgba(16,35,26,.50);">In queue</div>
+            <div style="margin-top:4px; font-size:12px; font-weight:500; color:var(--ink-50);">In queue</div>
           </div>
         </div>
-        <div style="display:flex; align-items:center; gap:13px; padding:15px 17px; border-radius:20px; background:#FFFFFF; border:1px solid rgba(16,42,26,.07);">
-          <div style="flex:none; width:38px; height:38px; border-radius:12px; display:grid; place-items:center; color:#1B8F4F; background:#E4F2E8;">
+        <div style="display:flex; align-items:center; gap:13px; padding:15px 17px; border-radius:20px; background:var(--surface); border:1px solid var(--line-07);">
+          <div style="flex:none; width:38px; height:38px; border-radius:12px; display:grid; place-items:center; color:var(--green-text); background:var(--green-tint);">
             <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5 9.5 18 20 6.5"></path></svg>
           </div>
           <div style="min-width:0;">
             <div style="display:flex; align-items:baseline; gap:6px;">
-              <span style="font-size:26px; font-weight:700; letter-spacing:-.03em; line-height:1; color:#1B8F4F;">{{ autoSubmitted }}</span>
-              <span style="font-size:12px; color:rgba(16,35,26,.45);">deals</span>
+              <span style="font-size:26px; font-weight:700; letter-spacing:-.03em; line-height:1; color:var(--green-text);">{{ autoSubmitted }}</span>
+              <span style="font-size:12px; color:var(--ink-45);">deals</span>
             </div>
-            <div style="margin-top:4px; font-size:12px; font-weight:500; color:rgba(16,35,26,.50);">Auto-submitted</div>
+            <div style="margin-top:4px; font-size:12px; font-weight:500; color:var(--ink-50);">Auto-submitted</div>
           </div>
         </div>
       </div>
 
       <div style="display:flex; gap:16px; flex:1; min-height:0;">
 
-        <section style="flex:1; min-width:0; display:flex; flex-direction:column; min-height:0; border-radius:26px; overflow:hidden; background:#FFFFFF; border:1px solid rgba(16,42,26,.07); box-shadow:0 1px 2px rgba(16,42,26,.04), 0 24px 50px -34px rgba(16,42,26,.40);">
-          <div style="display:flex; align-items:center; gap:8px; padding:14px 16px 12px; border-bottom:1px solid rgba(16,42,26,.07);">
-            <div style="display:flex; padding:3px; gap:2px; border-radius:14px; background:#EEF3EE;">
+        <section style="flex:1; min-width:0; display:flex; flex-direction:column; min-height:0; border-radius:26px; overflow:hidden; background:var(--surface); border:1px solid var(--line-07); box-shadow:0 1px 2px var(--line-04), 0 24px 50px -34px var(--line-40);">
+          <div style="display:flex; align-items:center; gap:8px; padding:14px 16px 12px; border-bottom:1px solid var(--line-07);">
+            <div style="display:flex; padding:3px; gap:2px; border-radius:14px; background:var(--track);">
               <sc-for list="{{ filters }}" as="f" hint-placeholder-count="3">
                 <div onClick="{{ f.onClick }}" style="{{ f.style }}">{{ f.label }}</div>
               </sc-for>
@@ -139,29 +254,29 @@ a { color:#1FA75C; text-decoration:none } a:hover { color:#17864A }
                     <div style="display:flex; align-items:center; gap:8px;">
                       <span style="font-size:15px; font-weight:600; letter-spacing:-.014em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ d.company }}</span>
                     </div>
-                    <div style="margin-top:3px; font-size:11.5px; color:rgba(16,35,26,.48); display:flex; gap:7px; align-items:center;">
+                    <div style="margin-top:3px; font-size:11.5px; color:var(--ink-48); display:flex; gap:7px; align-items:center;">
                       <span>{{ d.industry }}</span><span style="opacity:.4;">·</span><span>{{ d.state }}</span><span style="opacity:.4;">·</span><span>{{ d.tib }} in business</span><span style="opacity:.4;">·</span><span>Position {{ d.position }}</span>
                     </div>
                   </div>
                   <div style="text-align:right; flex:none;">
-                    <div style="font-size:11px; color:rgba(16,35,26,.40);">{{ d.ago }}</div>
+                    <div style="font-size:11px; color:var(--ink-40);">{{ d.ago }}</div>
                   </div>
                 </div>
                 <div style="display:flex; align-items:center; gap:8px; margin-top:11px;">
-                  <div style="display:flex; align-items:center; gap:6px; height:26px; padding:0 11px; border-radius:13px; background:#F2F6F2; font-size:11.5px; color:rgba(16,35,26,.72);"><span style="color:rgba(16,35,26,.42);">FICO</span> {{ d.fico }}</div>
-                  <div style="display:flex; align-items:center; gap:6px; height:26px; padding:0 11px; border-radius:13px; background:#F2F6F2; font-size:11.5px; color:rgba(16,35,26,.72);"><span style="color:rgba(16,35,26,.42);">ADB</span> {{ d.adb }}</div>
+                  <div style="display:flex; align-items:center; gap:6px; height:26px; padding:0 11px; border-radius:13px; background:var(--chip); font-size:11.5px; color:var(--ink-72);"><span style="color:var(--ink-42);">FICO</span> {{ d.fico }}</div>
+                  <div style="display:flex; align-items:center; gap:6px; height:26px; padding:0 11px; border-radius:13px; background:var(--chip); font-size:11.5px; color:var(--ink-72);"><span style="color:var(--ink-42);">ADB</span> {{ d.adb }}</div>
                   <div style="{{ d.nsfStyle }}"><span style="opacity:.6;">NSF</span> {{ d.nsf }}</div>
-                  <div style="display:flex; align-items:center; gap:6px; height:26px; padding:0 11px; border-radius:13px; background:#F2F6F2; font-size:11.5px; white-space:nowrap; color:rgba(16,35,26,.72);">{{ d.lenderCount }} lenders matched</div>
+                  <div style="display:flex; align-items:center; gap:6px; height:26px; padding:0 11px; border-radius:13px; background:var(--chip); font-size:11.5px; white-space:nowrap; color:var(--ink-72);">{{ d.lenderCount }} lenders matched</div>
                   <div style="margin-left:auto; display:flex; align-items:center; gap:7px;">
-                    <span style="font-size:11px; color:rgba(16,35,26,.42);">{{ d.assignedLabel }}</span>
+                    <span style="font-size:11px; color:var(--ink-42);">{{ d.assignedLabel }}</span>
                     <div style="{{ d.assigneeStyle }}">{{ d.assigneeInitials }}</div>
                   </div>
                 </div>
               </div>
             </sc-for>
             <sc-if value="{{ isEmpty }}" hint-placeholder-val="{{ false }}">
-              <div style="padding:56px 20px; text-align:center; color:rgba(16,35,26,.45);">
-                <div style="font-size:15px; font-weight:600; color:rgba(16,35,26,.72);">{{ emptyTitle }}</div>
+              <div style="padding:56px 20px; text-align:center; color:var(--ink-45);">
+                <div style="font-size:15px; font-weight:600; color:var(--ink-72);">{{ emptyTitle }}</div>
                 <div style="font-size:12.5px; margin-top:5px;">{{ emptyBody }}</div>
               </div>
             </sc-if>
@@ -169,28 +284,28 @@ a { color:#1FA75C; text-decoration:none } a:hover { color:#17864A }
         </section>
 
         <div style="{{ panelWrapStyle }}">
-        <aside style="width:470px; height:100%; box-sizing:border-box; display:flex; flex-direction:column; min-height:0; border-radius:26px; overflow:hidden; background:#FFFFFF; border:1px solid rgba(16,42,26,.07); box-shadow:0 1px 2px rgba(16,42,26,.04), 0 24px 50px -34px rgba(16,42,26,.40);">
-          <div style="padding:18px 20px 14px; border-bottom:1px solid rgba(16,42,26,.07);">
+        <aside style="width:470px; height:100%; box-sizing:border-box; display:flex; flex-direction:column; min-height:0; border-radius:26px; overflow:hidden; background:var(--surface); border:1px solid var(--line-07); box-shadow:0 1px 2px var(--line-04), 0 24px 50px -34px var(--line-40);">
+          <div style="padding:18px 20px 14px; border-bottom:1px solid var(--line-07);">
             <div style="display:flex; align-items:center; gap:8px;">
               <span style="{{ eyebrowStyle }}">{{ eyebrow }}</span>
-              <span style="margin-left:auto; font-size:11px; color:rgba(16,35,26,.40);">{{ sel.submittedAt }}</span>
-              <div onClick="{{ closePanel }}" title="Close" style="flex:none; width:26px; height:26px; display:grid; place-items:center; border-radius:13px; cursor:pointer; font-size:12px; color:rgba(16,35,26,.50); background:#F1F5F1;" style-hover="background:#E6ECE6; color:#10231A;">✕</div>
+              <span style="margin-left:auto; font-size:11px; color:var(--ink-40);">{{ sel.submittedAt }}</span>
+              <div onClick="{{ closePanel }}" title="Close" style="flex:none; width:26px; height:26px; display:grid; place-items:center; border-radius:13px; cursor:pointer; font-size:12px; color:var(--ink-50); background:var(--chip);" style-hover="background:var(--emphasis); color:var(--ink);">✕</div>
             </div>
             <h2 style="margin:7px 0 0; font-size:23px; font-weight:700; letter-spacing:-.026em; line-height:1.15;">{{ sel.company }}</h2>
             <div style="margin-top:9px; display:flex; align-items:center; gap:8px;">
-              <div style="display:flex; align-items:center; height:28px; padding:0 12px; border-radius:14px; background:#E4F2E8; color:#1B8F4F; font-size:12px; font-weight:600;">{{ sel.request }}</div>
-              <div style="display:flex; align-items:center; gap:5px; height:28px; padding:0 12px; border-radius:14px; background:#F2F6F2; font-size:12px; color:rgba(16,35,26,.65);"><span>Position</span><span>{{ sel.position }}</span></div>
+              <div style="display:flex; align-items:center; height:28px; padding:0 12px; border-radius:14px; background:var(--green-tint); color:var(--green-text); font-size:12px; font-weight:600;">{{ sel.request }}</div>
+              <div style="display:flex; align-items:center; gap:5px; height:28px; padding:0 12px; border-radius:14px; background:var(--chip); font-size:12px; color:var(--ink-65);"><span>Position</span><span>{{ sel.position }}</span></div>
             </div>
           </div>
 
           <div style="flex:1; overflow-y:auto; padding:16px 20px 18px; display:flex; flex-direction:column; gap:18px;">
 
             <div>
-              <div style="font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:rgba(16,35,26,.42); font-weight:600; margin-bottom:9px;">Deal information</div>
-              <div style="display:grid; grid-template-columns:1fr 1fr; gap:1px; background:rgba(16,42,26,.08); border:1px solid rgba(16,42,26,.08); border-radius:16px; overflow:hidden;">
+              <div style="font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-42); font-weight:600; margin-bottom:9px;">Deal information</div>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--line-08); border:1px solid var(--line-08); border-radius:16px; overflow:hidden;">
                 <sc-for list="{{ sel.fields }}" as="f" hint-placeholder-count="12">
-                  <div style="background:#FAFCFA; padding:9px 12px; display:flex; flex-direction:column; gap:2px; min-width:0;">
-                    <span style="font-size:10.5px; letter-spacing:.05em; text-transform:uppercase; color:rgba(16,35,26,.40); font-weight:600;">{{ f.k }}</span>
+                  <div style="background:var(--sunken); padding:9px 12px; display:flex; flex-direction:column; gap:2px; min-width:0;">
+                    <span style="font-size:10.5px; letter-spacing:.05em; text-transform:uppercase; color:var(--ink-40); font-weight:600;">{{ f.k }}</span>
                     <span style="font-size:13px; color:{{ f.color }}; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ f.v }}</span>
                   </div>
                 </sc-for>
@@ -199,21 +314,21 @@ a { color:#1FA75C; text-decoration:none } a:hover { color:#17864A }
 
             <div>
               <div onClick="{{ toggleDocs }}" style="display:flex; align-items:center; gap:8px; margin-bottom:10px; cursor:pointer;">
-                <div style="font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:rgba(16,35,26,.42); font-weight:600;">Documents Submitted</div>
-                <div style="display:grid; place-items:center; height:19px; min-width:19px; padding:0 6px; border-radius:9px; font-size:10.5px; font-weight:700; color:#1B8F4F; background:#E4F2E8;">{{ sel.docCount }}</div>
+                <div style="font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-42); font-weight:600;">Documents Submitted</div>
+                <div style="display:grid; place-items:center; height:19px; min-width:19px; padding:0 6px; border-radius:9px; font-size:10.5px; font-weight:700; color:var(--green-text); background:var(--green-tint);">{{ sel.docCount }}</div>
                 
-                <span style="font-size:11px; color:rgba(16,35,26,.45);">{{ docsCaret }}</span>
+                <span style="font-size:11px; color:var(--ink-45);">{{ docsCaret }}</span>
               </div>
               <sc-if value="{{ docsOpen }}" hint-placeholder-val="{{ true }}">
                 <div style="display:flex; flex-direction:column; gap:6px;">
                   <sc-for list="{{ sel.docs }}" as="doc" hint-placeholder-count="4">
-                    <div onClick="{{ doc.onOpen }}" style="{{ doc.style }}" style-hover="background:rgba(52,199,89,.10); border-color:rgba(52,199,89,.30);">
-                      <img src="assets/pdf-icon.png" alt="PDF" style="flex:none; width:44px; height:44px; object-fit:contain; display:block; margin:-5px -6px -5px -4px;" />
+                    <div onClick="{{ doc.onOpen }}" style="{{ doc.style }}" style-hover="background:var(--row-hover); border-color:var(--row-hover-bd);">
+                      <img src="assets/pdf-icon.png" alt="PDF" style="flex:none; width:44px; height:44px; object-fit:contain; display:block; margin:-5px -6px -5px -4px; filter:var(--pdf-filter);" />
                       <div style="min-width:0; flex:1;">
                         <div style="font-size:12.5px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ doc.name }}</div>
-                        <div style="font-size:11px; color:rgba(16,35,26,.42); margin-top:2px;">{{ doc.meta }}</div>
+                        <div style="font-size:11px; color:var(--ink-42); margin-top:2px;">{{ doc.meta }}</div>
                       </div>
-                      <span style="flex:none; font-size:11.5px; font-weight:500; color:#1FA75C;">View</span>
+                      <span style="flex:none; font-size:11.5px; font-weight:500; color:var(--green-link);">View</span>
                     </div>
                   </sc-for>
                 </div>
@@ -222,16 +337,16 @@ a { color:#1FA75C; text-decoration:none } a:hover { color:#17864A }
 
             <div>
               <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
-                <div style="font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:rgba(16,35,26,.42); font-weight:600;">Seasonality · monthly deposits</div>
-                <span style="margin-left:auto; font-size:11px; color:rgba(16,35,26,.40);">trailing 12</span>
+                <div style="font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-42); font-weight:600;">Seasonality · monthly deposits</div>
+                <span style="margin-left:auto; font-size:11px; color:var(--ink-40);">trailing 12</span>
               </div>
-              <div style="position:relative; height:150px; border-radius:16px; overflow:hidden; background:#FAFCFA; border:1px solid rgba(16,42,26,.08);">
+              <div style="position:relative; height:150px; border-radius:16px; overflow:hidden; background:var(--sunken); border:1px solid var(--line-08);">
                 <image-slot id="seasonality" shape="rect" fit="contain" placeholder="Drop seasonality breakdown .png"></image-slot>
               </div>
             </div>
 
             <div>
-              <div style="font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:rgba(16,35,26,.42); font-weight:600; margin-bottom:9px;">Suggested lenders · auto-matched</div>
+              <div style="font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-42); font-weight:600; margin-bottom:9px;">Suggested lenders · auto-matched</div>
               <div style="display:flex; flex-wrap:wrap; gap:6px;">
                 <sc-for list="{{ sel.lenders }}" as="l" hint-placeholder-count="8">
                   <div style="{{ l.style }}">{{ l.name }}</div>
@@ -240,23 +355,23 @@ a { color:#1FA75C; text-decoration:none } a:hover { color:#17864A }
             </div>
 
             <div style="display:flex; flex-direction:column; gap:9px;">
-              <div style="font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:rgba(16,35,26,.42); font-weight:600;">Notes</div>
-              <div style="padding:11px 13px; border-radius:14px; background:#FAFCFA; border:1px solid rgba(16,42,26,.08); font-size:12.5px; line-height:1.5; color:rgba(16,35,26,.65);">{{ sel.note }}</div>
-              <div style="padding:11px 13px; border-radius:14px; background:#E4F2E8; font-size:12.5px; line-height:1.5; color:#25543A;">
+              <div style="font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-42); font-weight:600;">Notes</div>
+              <div style="padding:11px 13px; border-radius:14px; background:var(--sunken); border:1px solid var(--line-08); font-size:12.5px; line-height:1.5; color:var(--ink-65);">{{ sel.note }}</div>
+              <div style="padding:11px 13px; border-radius:14px; background:var(--green-tint); font-size:12.5px; line-height:1.5; color:var(--note-ink);">
                 <span style="font-weight:700;">Santi's note · </span>{{ sel.sanitNote }}
               </div>
             </div>
           </div>
 
-          <div style="padding:14px 18px 16px; border-top:1px solid rgba(16,42,26,.07); background:#FAFCFA;">
+          <div style="padding:14px 18px 16px; border-top:1px solid var(--line-07); background:var(--sunken);">
             <div style="display:flex; align-items:center; gap:8px; margin-bottom:11px;">
-              <span style="font-size:11.5px; color:rgba(16,35,26,.45);">Deciding as</span>
-              <div style="display:flex; padding:3px; gap:2px; border-radius:13px; background:#EEF3EE;">
+              <span style="font-size:11.5px; color:var(--ink-45);">Deciding as</span>
+              <div style="display:flex; padding:3px; gap:2px; border-radius:13px; background:var(--track);">
                 <sc-for list="{{ reviewers }}" as="r" hint-placeholder-count="2">
                   <div onClick="{{ r.onClick }}" style="{{ r.style }}">{{ r.name }}</div>
                 </sc-for>
               </div>
-              <span style="margin-left:auto; font-size:11.5px; color:rgba(16,35,26,.38);">{{ decidedLabel }}</span>
+              <span style="margin-left:auto; font-size:11.5px; color:var(--ink-38);">{{ decidedLabel }}</span>
             </div>
             <sc-if value="{{ decisionLine }}" hint-placeholder-val="{{ false }}">
               <div style="display:flex; gap:9px;">
@@ -265,8 +380,8 @@ a { color:#1FA75C; text-decoration:none } a:hover { color:#17864A }
             </sc-if>
             <sc-if value="{{ canDecide }}" hint-placeholder-val="{{ true }}">
             <div style="display:flex; gap:9px;">
-              <div onClick="{{ onReject }}" style="flex:1; height:46px; display:grid; place-items:center; border-radius:16px; cursor:pointer; font-size:14px; font-weight:600; letter-spacing:-.01em; color:#42604E; background:#EDF1EE;" style-hover="background:#E3E9E4;">Reject</div>
-              <div onClick="{{ onApprove }}" style="flex:2.1; height:46px; display:grid; place-items:center; border-radius:16px; cursor:pointer; font-size:14px; font-weight:600; letter-spacing:-.012em; color:#FFFFFF; background:#2E9E58;" style-hover="background:#278A4C;">Approve</div>
+              <div onClick="{{ onReject }}" style="flex:1; height:46px; display:grid; place-items:center; border-radius:16px; cursor:pointer; font-size:14px; font-weight:600; letter-spacing:-.01em; color:var(--ink-muted); background:var(--btn);" style-hover="background:var(--btn-hover);">Reject</div>
+              <div onClick="{{ onApprove }}" style="flex:2.1; height:46px; display:grid; place-items:center; border-radius:16px; cursor:pointer; font-size:14px; font-weight:600; letter-spacing:-.012em; color:#FFFFFF; background:var(--green);" style-hover="background:var(--green-hover);">Approve</div>
             </div>
             </sc-if>
           </div>
@@ -362,13 +477,27 @@ const DEALS = [
 ];
 
 const RISK = {
-  clean: { fg:"#1B8F4F", bg:"#E4F2E8" },
-  watch: { fg:"#42604E", bg:"#EAF0EB" },
-  high:  { fg:"#42604E", bg:"#EAF0EB" }
+  clean: { fg:"var(--green-text)", bg:"var(--green-tint)" },
+  watch: { fg:"var(--ink-muted)", bg:"var(--emphasis)" },
+  high:  { fg:"var(--ink-muted)", bg:"var(--emphasis)" }
 };
 
 class Component extends DCLogic {
-  state = { deals: DEALS, selId: null, lastSelId: 1, filter: "Awaiting", reviewer: "Santi", decided: 0, autoSubmitted: 128, docsOpen: true, viewing: null, navOpen: false, navPage: "desk", navHover: null };
+  state = { deals: DEALS, selId: null, lastSelId: 1, filter: "Awaiting", reviewer: "Santi", decided: 0, autoSubmitted: 128, docsOpen: true, viewing: null, navOpen: false, navPage: "desk", navHover: null, theme: "light" };
+
+  componentDidMount() {
+    let saved = null;
+    try { saved = localStorage.getItem("capdesk-theme"); } catch (e) {}
+    const theme = saved === "dark" || saved === "light" ? saved : "light";
+    document.documentElement.dataset.theme = theme;
+    if (theme !== this.state.theme) this.setState({ theme });
+  }
+
+  setTheme(theme) {
+    document.documentElement.dataset.theme = theme;
+    try { localStorage.setItem("capdesk-theme", theme); } catch (e) {}
+    this.setState({ theme });
+  }
 
   navItem(id) {
     const open = this.state.navOpen;
@@ -380,8 +509,8 @@ class Component extends DCLogic {
       tip: !open && hot,
       rowStyle: "position:relative;display:flex;align-items:center;gap:11px;height:40px;border-radius:13px;cursor:pointer;transition:background .16s ease,color .16s ease;" +
         (open ? "padding:0 11px;" : "width:40px;justify-content:center;") +
-        (on ? "background:#E4F2E8;color:#1B8F4F;"
-            : hot ? "background:#F2F6F2;color:#10231A;" : "background:transparent;color:rgba(16,35,26,.52);"),
+        (on ? "background:var(--green-tint);color:var(--green-text);"
+            : hot ? "background:var(--chip);color:var(--ink);" : "background:transparent;color:var(--ink-52);"),
       labelStyle: "font-size:13.5px;white-space:nowrap;letter-spacing:-.008em;font-weight:" + (on ? "600" : "500") + ";"
     };
   }
@@ -422,8 +551,8 @@ class Component extends DCLogic {
       style: "padding:0 14px;height:29px;display:grid;place-items:center;border-radius:11px;cursor:pointer;white-space:nowrap;font-size:12.5px;transition:background .18s ease;font-weight:" +
         (this.state.filter === name ? "600" : "500") + ";" +
         (this.state.filter === name
-          ? "color:#10231A;background:#FFFFFF;box-shadow:0 1px 3px rgba(16,42,26,.14);"
-          : "color:rgba(16,35,26,.50);")
+          ? "color:var(--ink);background:var(--surface);box-shadow:0 1px 3px var(--line-14);"
+          : "color:var(--ink-50);")
     }));
 
     const reviewers = ["Santi", "Careem"].map(name => ({
@@ -431,8 +560,8 @@ class Component extends DCLogic {
       onClick: () => this.setState({ reviewer: name }),
       style: "padding:0 13px;height:26px;display:grid;place-items:center;border-radius:10px;cursor:pointer;font-size:12px;font-weight:600;" +
         (this.state.reviewer === name
-          ? "color:#10231A;background:#FFFFFF;box-shadow:0 1px 3px rgba(16,42,26,.14);"
-          : "color:rgba(16,35,26,.48);")
+          ? "color:var(--ink);background:var(--surface);box-shadow:0 1px 3px var(--line-14);"
+          : "color:var(--ink-48);")
     }));
 
     const deals = list.map(d => {
@@ -444,33 +573,33 @@ class Component extends DCLogic {
         onSelect: () => this.setState({ selId: d.id, lastSelId: d.id }),
         cardStyle: "padding:13px 14px;border-radius:20px;cursor:pointer;transition:background .18s ease, border-color .18s ease, box-shadow .18s ease;" +
           (active
-            ? "background:#EBF6EE;border:1px solid #2E9E58;"
-            : "background:#FFFFFF;border:1px solid rgba(16,42,26,.09);"),
+            ? "background:var(--green-card);border:1px solid var(--green);"
+            : "background:var(--surface);border:1px solid var(--line-09);"),
         avatarStyle: "flex:none;width:38px;height:38px;border-radius:13px;display:grid;place-items:center;font-size:12.5px;font-weight:700;color:" +
           r.fg + ";background:" + r.bg + ";",
         nsfStyle: "display:flex;align-items:center;gap:6px;height:26px;padding:0 11px;border-radius:13px;font-size:11.5px;" +
-          (d.nsf >= 5 ? "color:#10231A;font-weight:600;background:#E6ECE7;" : "color:rgba(16,35,26,.72);background:#F2F6F2;"),
+          (d.nsf >= 5 ? "color:var(--ink);font-weight:600;background:var(--emphasis);" : "color:var(--ink-72);background:var(--chip);"),
         assignedLabel: d.status === "approved" ? "Approved by " + (d.decidedBy || d.assignee)
           : d.status === "rejected" ? "Rejected by " + (d.decidedBy || d.assignee) : "",
         assigneeInitials: d.status === "approved" ? "✓" : d.status === "rejected" ? "✕" : "",
         assigneeStyle: !d.status ? "display:none;"
           : "width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:700;" +
-            (d.status === "approved" ? "color:#FFFFFF;background:#2E9E58;" : "color:#5B6B60;background:#E6ECE7;")
+            (d.status === "approved" ? "color:#FFFFFF;background:var(--green);" : "color:var(--ink-muted-2);background:var(--emphasis);")
       };
     });
 
-    const dim = "rgba(16,35,26,.82)";
+    const dim = "var(--ink-82)";
     const selVals = sel ? {
       company: sel.company, submittedAt: "Submitted " + sel.submittedAt,
       request: sel.lenders.length + " lenders matched",
       position: sel.position, lenderCount: sel.lenders.length,
       fields: [
         { k:"Company", v:sel.company, color:dim }, { k:"Lead source", v:sel.leadSource, color:dim },
-        { k:"Email", v:sel.email, color:"#1B8F4F" }, { k:"Credit score", v:String(sel.fico), color:dim },
-        { k:"Phone", v:sel.phone, color: sel.phone === "N/A" ? "rgba(16,35,26,.35)" : dim },
+        { k:"Email", v:sel.email, color:"var(--green-text)" }, { k:"Credit score", v:String(sel.fico), color:dim },
+        { k:"Phone", v:sel.phone, color: sel.phone === "N/A" ? "var(--ink-35)" : dim },
         { k:"Industry", v:sel.industry, color:dim },
         { k:"Puller", v:sel.puller, color:dim }, { k:"Revenue", v:sel.revenue, color:dim },
-        { k:"Re-puller", v:sel.rePuller, color: sel.rePuller === "None" ? "rgba(16,35,26,.35)" : dim },
+        { k:"Re-puller", v:sel.rePuller, color: sel.rePuller === "None" ? "var(--ink-35)" : dim },
         { k:"Avg daily balance", v:sel.adb, color:dim },
         { k:"State", v:sel.state, color:dim }, { k:"Deposits", v:sel.deposits, color:dim },
         { k:"Time in business", v:sel.tib, color:dim },
@@ -478,12 +607,12 @@ class Component extends DCLogic {
       ],
       lenders: sel.lenders.map(name => ({
         name,
-        style: "height:27px;padding:0 12px;display:grid;place-items:center;border-radius:13px;font-size:12px;color:#1B8F4F;background:#E4F2E8;font-weight:600;"
+        style: "height:27px;padding:0 12px;display:grid;place-items:center;border-radius:13px;font-size:12px;color:var(--green-text);background:var(--green-tint);font-weight:600;"
       })),
       docs: (DOCS[sel.id] || []).map(([name, meta]) => ({
         name, meta, ext: "PDF",
         onOpen: () => this.setState({ viewing: { name, meta, company: sel.company } }),
-        style: "display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:14px;cursor:pointer;transition:background .16s ease,border-color .16s ease;background:#F7FAF7;border:1px solid rgba(16,42,26,.08);"
+        style: "display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:14px;cursor:pointer;transition:background .16s ease,border-color .16s ease;background:var(--row);border:1px solid var(--line-08);"
       })),
       docCount: (DOCS[sel.id] || []).length,
       docPages: (DOCS[sel.id] || []).reduce((s, d) => s + parseInt(d[1], 10), 0),
@@ -499,17 +628,28 @@ class Component extends DCLogic {
       onNavLeave: () => this.setState({ navHover: null }),
       n1: this.navItem("desk"), n2: this.navItem("deals"), n3: this.navItem("lenders"),
       n4: this.navItem("reporting"), n5: this.navItem("settings"),
-      navStyle: "flex:none;box-sizing:border-box;display:flex;flex-direction:column;margin:16px 0 16px 16px;padding:14px 12px;border-radius:24px;background:#FFFFFF;border:1px solid rgba(16,42,26,.07);transition:width .3s cubic-bezier(.22,.9,.24,1);width:" +
+      navStyle: "flex:none;box-sizing:border-box;display:flex;flex-direction:column;margin:16px 0 16px 16px;padding:14px 12px;border-radius:24px;background:var(--surface);border:1px solid var(--line-07);transition:width .3s cubic-bezier(.22,.9,.24,1);width:" +
         (navOpen ? "232px;" : "64px;"),
-      navHeadStyle: "display:flex;align-items:center;gap:8px;min-height:48px;padding:8px 2px 16px;border-bottom:1px solid rgba(16,42,26,.07);" +
+      navHeadStyle: "display:flex;align-items:center;gap:8px;min-height:48px;padding:8px 2px 16px;border-bottom:1px solid var(--line-07);" +
         (navOpen ? "" : "flex-direction:column;"),
       navListStyle: "display:flex;flex-direction:column;gap:4px;padding-top:14px;" + (navOpen ? "" : "align-items:center;"),
-      navFootStyle: "margin-top:auto;display:flex;align-items:center;gap:10px;padding-top:14px;border-top:1px solid rgba(16,42,26,.07);" +
+      navFootStyle: "display:flex;align-items:center;gap:10px;padding-top:14px;border-top:1px solid var(--line-07);" +
         (navOpen ? "" : "justify-content:center;"),
-      toggleStyle: "flex:none;width:42px;height:42px;display:grid;place-items:center;border-radius:12px;cursor:pointer;color:rgba(16,35,26,.50);background:transparent;transition:color .16s ease;" +
+      themeRowWrapStyle: "margin-top:auto;padding-bottom:10px;display:flex;" + (navOpen ? "" : "justify-content:center;"),
+      themeDark: this.state.theme === "dark",
+      themeLight: this.state.theme !== "dark",
+      themeLabel: this.state.theme === "dark" ? "Light mode" : "Dark mode",
+      themeTip: !navOpen && this.state.navHover === "theme",
+      onThemeEnter: () => this.setState({ navHover: "theme" }),
+      toggleTheme: () => this.setTheme(this.state.theme === "dark" ? "light" : "dark"),
+      themeBtnStyle: "position:relative;display:flex;align-items:center;gap:11px;height:40px;border-radius:13px;cursor:pointer;transition:background .16s ease,color .16s ease;" +
+        (navOpen ? "flex:1;padding:0 11px;" : "width:40px;justify-content:center;") +
+        (this.state.navHover === "theme" ? "background:var(--chip);color:var(--ink);" : "background:transparent;color:var(--ink-52);"),
+      toggleStyle: "flex:none;width:42px;height:42px;display:grid;place-items:center;border-radius:12px;cursor:pointer;color:var(--ink-50);background:transparent;transition:color .16s ease;" +
         (navOpen ? "margin-left:auto;margin-right:-8px;" : "margin-top:2px;"),
-      tipStyle: "position:absolute;left:calc(100% + 12px);top:50%;transform:translateY(-50%);z-index:20;height:30px;display:flex;align-items:center;padding:0 11px;border-radius:9px;background:#10231A;color:#FFFFFF;font-size:12.5px;font-weight:500;white-space:nowrap;pointer-events:none;box-shadow:0 6px 18px -10px rgba(16,42,26,.6);",
+      tipStyle: "position:absolute;left:calc(100% + 12px);top:50%;transform:translateY(-50%);z-index:20;height:30px;display:flex;align-items:center;padding:0 11px;border-radius:9px;background:var(--tooltip-bg);color:var(--tooltip-ink);font-size:12.5px;font-weight:500;white-space:nowrap;pointer-events:none;box-shadow:0 6px 18px -10px var(--line-6);",
       reviewerName: this.state.reviewer,
+      themeState: this.state.theme,
       reviewerInitials: this.state.reviewer.slice(0, 2).toUpperCase(),
       isEmpty: list.length === 0,
       emptyTitle: this.state.filter === "Awaiting" ? "Queue cleared"
@@ -526,8 +666,8 @@ class Component extends DCLogic {
         : sel.status === "rejected" ? "Rejected" : "New deal submitted",
       eyebrowStyle: "display:inline-flex;align-items:center;height:24px;padding:0 11px;border-radius:12px;font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;white-space:nowrap;" +
         (sel && sel.status === "rejected"
-          ? "color:#5B6B60;background:#EDF1EE;"
-          : "color:#1B8F4F;background:#E4F2E8;"),
+          ? "color:var(--ink-muted-2);background:var(--btn);"
+          : "color:var(--green-text);background:var(--green-tint);"),
       panelWrapStyle: "flex:none;min-height:0;overflow:hidden;transition:width .42s cubic-bezier(.22,.9,.24,1), opacity .34s ease, transform .42s cubic-bezier(.22,.9,.24,1);" +
         (open ? "width:470px;opacity:1;transform:translateX(0);" : "width:0px;opacity:0;transform:translateX(30px);pointer-events:none;"),
       docsOpen: this.state.docsOpen,
@@ -541,8 +681,8 @@ class Component extends DCLogic {
       canDecide: !!sel && (sel.status || "awaiting") === "awaiting",
       decisionLine: sel && sel.decision ? sel.decision : "",
       decisionStyle: sel && sel.status === "approved"
-        ? "flex:1;height:46px;display:grid;place-items:center;border-radius:16px;font-size:13.5px;font-weight:600;color:#1B8F4F;background:#E4F2E8;"
-        : "flex:1;height:46px;display:grid;place-items:center;border-radius:16px;font-size:13.5px;font-weight:600;color:#5B6B60;background:#EDF1EE;",
+        ? "flex:1;height:46px;display:grid;place-items:center;border-radius:16px;font-size:13.5px;font-weight:600;color:var(--green-text);background:var(--green-tint);"
+        : "flex:1;height:46px;display:grid;place-items:center;border-radius:16px;font-size:13.5px;font-weight:600;color:var(--ink-muted-2);background:var(--btn);",
       queueCount: counts.Awaiting,
       autoSubmitted: this.state.autoSubmitted,
       decidedLabel: this.state.decided ? this.state.decided + " decided this session" : "No decisions yet",

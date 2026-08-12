@@ -1,26 +1,33 @@
 /* CapDesk — Submission Desk
-   Faithful port of design_handoff_capdesk/CapDesk Dashboard.dc.html.
-   All colors, sizes, radii, and shadows come from the handoff's token tables.
-   Flat only: solid fills, hairline borders, soft neutral shadows. Green and
-   gray-green neutrals are the only hues — no red or amber anywhere. */
+   Faithful port of design_handoff_capdesk/ (README.md + THEMING.md).
+   Two themes, one token set: every color resolves through a custom property;
+   light lives in :root, dark overrides in :root[data-theme="dark"]. The only
+   legal hex literals outside the token blocks are the two #FFFFFF text values
+   that sit on --green in both themes (Approve label, approved ✓ badge).
+   Flat only: solid fills, hairline borders, soft shadows. Green and gray-green
+   neutrals are the only hues — no red or amber anywhere, in either theme. */
 
 :root {
+  color-scheme: light;
+  /* Surfaces */
   --canvas: #EDF3EE;
   --surface: #FFFFFF;
-  --surface-sunken: #FAFCFA;
-  --surface-alt: #F7FAF7;
-  --fill-neutral: #F2F6F2;
-  --fill-track: #EEF3EE;
-  --fill-emphasis: #E6ECE7;
-  --fill-button: #EDF1EE;
-  --fill-button-hover: #E3E9E4;
-  --border: rgba(16, 42, 26, .07);
-  --border-strong: rgba(16, 42, 26, .08);
-  --border-card: rgba(16, 42, 26, .09);
+  --sunken: #FAFCFA;
+  --row: #F7FAF7;
+  --viewer: #F6F9F6;
+  --chip: #F2F6F2;
+  --track: #EEF3EE;
+  --btn: #EDF1EE;
+  --btn-hover: #E3E9E4;
+  --emphasis: #E6ECE7;
+  --green-card: #EBF6EE;
+  --green-tint: #E4F2E8;
+  /* Ink */
   --ink: #10231A;
   --ink-82: rgba(16, 35, 26, .82);
   --ink-72: rgba(16, 35, 26, .72);
   --ink-65: rgba(16, 35, 26, .65);
+  --ink-55: rgba(16, 35, 26, .55);
   --ink-52: rgba(16, 35, 26, .52);
   --ink-50: rgba(16, 35, 26, .50);
   --ink-48: rgba(16, 35, 26, .48);
@@ -30,17 +37,85 @@
   --ink-38: rgba(16, 35, 26, .38);
   --ink-35: rgba(16, 35, 26, .35);
   --ink-muted: #42604E;
-  --ink-rejected: #5B6B60;
+  --ink-muted-2: #5B6B60;
+  --note-ink: #25543A;
+  /* Green (the only hue) */
   --green: #2E9E58;
   --green-hover: #278A4C;
   --green-text: #1B8F4F;
   --green-link: #1FA75C;
-  --green-link-hover: #17864A;
-  --green-tint: #E4F2E8;
-  --green-tint-2: #EBF6EE;
-  --shadow-card: 0 1px 2px rgba(16, 42, 26, .04);
-  --shadow-panel: 0 1px 2px rgba(16, 42, 26, .04), 0 24px 50px -34px rgba(16, 42, 26, .40);
-  --shadow-segment: 0 1px 3px rgba(16, 42, 26, .14);
+  --green-link-h: #17864A;
+  --row-hover: rgba(52, 199, 89, .10);
+  --row-hover-bd: rgba(52, 199, 89, .30);
+  /* Lines, shadows, misc */
+  --line-07: rgba(16, 42, 26, .07);
+  --line-08: rgba(16, 42, 26, .08);
+  --line-09: rgba(16, 42, 26, .09);
+  --line-16: rgba(16, 42, 26, .16);
+  --line-04: rgba(16, 42, 26, .04);
+  --line-14: rgba(16, 42, 26, .14);
+  --line-40: rgba(16, 42, 26, .40);
+  --line-45: rgba(16, 42, 26, .45);
+  --line-6: rgba(16, 42, 26, .6);
+  --scrim: rgba(20, 40, 28, .28);
+  --tooltip-bg: #10231A;
+  --tooltip-ink: #FFFFFF;
+  --pdf-filter: none;
+}
+
+/* Dark: surfaces step up in lightness instead of gaining shadows. Borders
+   become a lit white edge at low alpha; shadows become black at higher alpha
+   — the semantics swap, per THEMING.md. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --canvas: #0E1411;
+  --surface: #161D19;
+  --sunken: #1A221D;
+  --row: #1A221D;
+  --viewer: #121815;
+  --chip: #212A24;
+  --track: #121915;
+  --btn: #232C27;
+  --btn-hover: #2B352E;
+  --emphasis: #2B352E;
+  --green-card: #16261D;
+  --green-tint: #173021;
+  --ink: #E7EEE9;
+  --ink-82: rgba(223, 235, 227, .82);
+  --ink-72: rgba(223, 235, 227, .72);
+  --ink-65: rgba(223, 235, 227, .65);
+  --ink-55: rgba(223, 235, 227, .55);
+  --ink-52: rgba(223, 235, 227, .52);
+  --ink-50: rgba(223, 235, 227, .50);
+  --ink-48: rgba(223, 235, 227, .48);
+  --ink-45: rgba(223, 235, 227, .45);
+  --ink-42: rgba(223, 235, 227, .42);
+  --ink-40: rgba(223, 235, 227, .40);
+  --ink-38: rgba(223, 235, 227, .38);
+  --ink-35: rgba(223, 235, 227, .35);
+  --ink-muted: #B7C8BD;
+  --ink-muted-2: #93A599;
+  --note-ink: #A9DCBB;
+  --green: #2FA45D;
+  --green-hover: #37B96C;
+  --green-text: #4FCB85;
+  --green-link: #4FCB85;
+  --green-link-h: #7BE0AB;
+  --row-hover: rgba(79, 203, 133, .12);
+  --row-hover-bd: rgba(79, 203, 133, .34);
+  --line-07: rgba(255, 255, 255, .07);
+  --line-08: rgba(255, 255, 255, .08);
+  --line-09: rgba(255, 255, 255, .09);
+  --line-16: rgba(255, 255, 255, .16);
+  --line-04: rgba(0, 0, 0, .34);
+  --line-14: rgba(0, 0, 0, .45);
+  --line-40: rgba(0, 0, 0, .70);
+  --line-45: rgba(0, 0, 0, .75);
+  --line-6: rgba(0, 0, 0, .75);
+  --scrim: rgba(0, 0, 0, .58);
+  --tooltip-bg: #E7EEE9;
+  --tooltip-ink: #0E1411;
+  --pdf-filter: invert(1) brightness(1.15);
 }
 
 * { box-sizing: border-box; }
@@ -62,10 +137,10 @@ body {
 }
 
 a { color: var(--green-link); text-decoration: none; }
-a:hover { color: var(--green-link-hover); }
+a:hover { color: var(--green-link-h); }
 
 ::-webkit-scrollbar { width: 8px; height: 8px; }
-::-webkit-scrollbar-thumb { background: rgba(16, 42, 26, .16); border-radius: 8px; }
+::-webkit-scrollbar-thumb { background: var(--line-16); border-radius: 8px; }
 ::-webkit-scrollbar-track { background: transparent; }
 
 /* ── Root layout ────────────────────────────────────────────────────── */
@@ -91,7 +166,7 @@ a:hover { color: var(--green-link-hover); }
   padding: 14px 12px;
   border-radius: 24px;
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: 1px solid var(--line-07);
   transition: width .3s cubic-bezier(.22, .9, .24, 1);
 }
 
@@ -103,7 +178,7 @@ a:hover { color: var(--green-link-hover); }
   gap: 8px;
   min-height: 48px;
   padding: 8px 2px 16px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--line-07);
 }
 
 .sidebar:not(.open) .side-head { flex-direction: column; }
@@ -182,7 +257,7 @@ a:hover { color: var(--green-link-hover); }
 .sidebar.open .nav-item { padding: 0 11px; }
 .sidebar:not(.open) .nav-item { width: 40px; justify-content: center; }
 
-.nav-item:not(.active):hover { background: var(--fill-neutral); color: var(--ink); }
+.nav-item:not(.active):hover { background: var(--chip); color: var(--ink); }
 .nav-item.active { background: var(--green-tint); color: var(--green-text); }
 
 .nav-icon {
@@ -215,24 +290,54 @@ a:hover { color: var(--green-link-hover); }
   align-items: center;
   padding: 0 11px;
   border-radius: 9px;
-  background: #10231A;
-  color: #FFFFFF;
+  background: var(--tooltip-bg);
+  color: var(--tooltip-ink);
   font-size: 12.5px;
   font-weight: 500;
   white-space: nowrap;
   pointer-events: none;
-  box-shadow: 0 6px 18px -10px rgba(16, 42, 26, .6);
+  box-shadow: 0 6px 18px -10px var(--line-6);
 }
 
 .nav-tip.show { display: flex; }
 
-.side-foot {
+/* Theme toggle — a nav-styled action row at the bottom of the nav area.
+   Same metrics as a destination row, but never an active state. */
+.side-theme {
   margin-top: auto;
+  padding-bottom: 10px;
+  display: flex;
+}
+
+.sidebar:not(.open) .side-theme { justify-content: center; }
+
+.theme-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  height: 40px;
+  border-radius: 13px;
+  border: none;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+  transition: background .16s ease, color .16s ease;
+  background: transparent;
+  color: var(--ink-52);
+}
+
+.sidebar.open .theme-row { flex: 1; padding: 0 11px; }
+.sidebar:not(.open) .theme-row { width: 40px; justify-content: center; }
+
+.theme-row:hover { background: var(--chip); color: var(--ink); }
+
+.side-foot {
   display: flex;
   align-items: center;
   gap: 10px;
   padding-top: 14px;
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--line-07);
 }
 
 .sidebar:not(.open) .side-foot { justify-content: center; }
@@ -291,8 +396,8 @@ h1 {
   padding: 0 14px;
   border-radius: 19px;
   background: var(--surface);
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow-card);
+  border: 1px solid var(--line-07);
+  box-shadow: 0 1px 2px var(--line-04);
   width: 280px;
 }
 
@@ -324,7 +429,7 @@ h1 {
   place-items: center;
   border-radius: 14px;
   border: none;
-  background: #F1F5F1;
+  background: var(--chip);
   color: var(--ink-50);
   font: inherit;
   font-size: 12px;
@@ -332,7 +437,7 @@ h1 {
   padding: 0;
 }
 
-.win-btn:hover { background: #E6ECE6; color: var(--ink); }
+.win-btn:hover { background: var(--emphasis); color: var(--ink); }
 
 /* ── Stat cards ─────────────────────────────────────────────────────── */
 
@@ -345,7 +450,7 @@ h1 {
   padding: 15px 17px;
   border-radius: 20px;
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: 1px solid var(--line-07);
 }
 
 .stat-icon {
@@ -357,7 +462,7 @@ h1 {
   place-items: center;
 }
 
-.stat-icon.neutral { color: var(--ink-muted); background: #EEF3EF; }
+.stat-icon.neutral { color: var(--ink-muted); background: var(--chip); }
 .stat-icon.green { color: var(--green-text); background: var(--green-tint); }
 
 .stat-main { min-width: 0; }
@@ -401,8 +506,8 @@ h1 {
   border-radius: 26px;
   overflow: hidden;
   background: var(--surface);
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow-panel);
+  border: 1px solid var(--line-07);
+  box-shadow: 0 1px 2px var(--line-04), 0 24px 50px -34px var(--line-40);
 }
 
 .tabbar {
@@ -410,7 +515,7 @@ h1 {
   align-items: center;
   gap: 8px;
   padding: 14px 16px 12px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--line-07);
 }
 
 .segmented {
@@ -418,7 +523,7 @@ h1 {
   padding: 3px;
   gap: 2px;
   border-radius: 14px;
-  background: var(--fill-track);
+  background: var(--track);
 }
 
 .tab {
@@ -439,7 +544,7 @@ h1 {
   font-weight: 600;
   color: var(--ink);
   background: var(--surface);
-  box-shadow: var(--shadow-segment);
+  box-shadow: 0 1px 3px var(--line-14);
 }
 
 .deal-list {
@@ -457,12 +562,12 @@ h1 {
   cursor: pointer;
   transition: background .18s ease, border-color .18s ease, box-shadow .18s ease;
   background: var(--surface);
-  border: 1px solid var(--border-card);
+  border: 1px solid var(--line-09);
 }
 
 /* Solid green hairline — no glow. */
 .deal-card.selected {
-  background: var(--green-tint-2);
+  background: var(--green-card);
   border: 1px solid var(--green);
 }
 
@@ -479,9 +584,10 @@ h1 {
   font-weight: 700;
 }
 
-/* Risk tint is the only signal — watch and high share one neutral tint. */
+/* Risk tint is the only signal — watch and high share one neutral tint.
+   --emphasis keeps these dark-on-dark; they must never sit near-white. */
 .risk-clean { color: var(--green-text); background: var(--green-tint); }
-.risk-watch, .risk-high { color: var(--ink-muted); background: #EAF0EB; }
+.risk-watch, .risk-high { color: var(--ink-muted); background: var(--emphasis); }
 
 .deal-main { min-width: 0; flex: 1; }
 
@@ -519,7 +625,7 @@ h1 {
   height: 26px;
   padding: 0 11px;
   border-radius: 13px;
-  background: var(--fill-neutral);
+  background: var(--chip);
   font-size: 11.5px;
   color: var(--ink-72);
   white-space: nowrap;
@@ -531,7 +637,7 @@ h1 {
 .chip.emph {
   color: var(--ink);
   font-weight: 600;
-  background: var(--fill-emphasis);
+  background: var(--emphasis);
 }
 
 .chip.emph .chip-key { color: inherit; opacity: .6; }
@@ -549,8 +655,9 @@ h1 {
   font-weight: 700;
 }
 
+/* The ✓ glyph is literal white on --green in both themes (per THEMING.md). */
 .decided-badge.approved { color: #FFFFFF; background: var(--green); }
-.decided-badge.rejected { color: var(--ink-rejected); background: var(--fill-emphasis); }
+.decided-badge.rejected { color: var(--ink-muted-2); background: var(--emphasis); }
 
 .empty {
   padding: 56px 20px;
@@ -602,13 +709,13 @@ h1 {
   border-radius: 26px;
   overflow: hidden;
   background: var(--surface);
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow-panel);
+  border: 1px solid var(--line-07);
+  box-shadow: 0 1px 2px var(--line-04), 0 24px 50px -34px var(--line-40);
 }
 
 .panel-header {
   padding: 18px 20px 14px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--line-07);
 }
 
 .panel-eyebrow-row { display: flex; align-items: center; gap: 8px; }
@@ -628,7 +735,7 @@ h1 {
 
 .panel-eyebrow.awaiting,
 .panel-eyebrow.approved { color: var(--green-text); background: var(--green-tint); }
-.panel-eyebrow.rejected { color: var(--ink-rejected); background: var(--fill-button); }
+.panel-eyebrow.rejected { color: var(--ink-muted-2); background: var(--btn); }
 
 .panel-submitted { margin-left: auto; font-size: 11px; color: var(--ink-40); }
 
@@ -645,10 +752,10 @@ h1 {
   font: inherit;
   font-size: 12px;
   color: var(--ink-50);
-  background: #F1F5F1;
+  background: var(--chip);
 }
 
-.panel-close:hover { background: #E6ECE6; color: var(--ink); }
+.panel-close:hover { background: var(--emphasis); color: var(--ink); }
 
 h2 {
   margin: 7px 0 0;
@@ -677,7 +784,7 @@ h2 {
 }
 
 .panel-chip.position {
-  background: var(--fill-neutral);
+  background: var(--chip);
   color: var(--ink-65);
 }
 
@@ -707,14 +814,14 @@ h2 {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1px;
-  background: var(--border-strong);
-  border: 1px solid var(--border-strong);
+  background: var(--line-08);
+  border: 1px solid var(--line-08);
   border-radius: 16px;
   overflow: hidden;
 }
 
 .field {
-  background: var(--surface-sunken);
+  background: var(--sunken);
   padding: 9px 12px;
   display: flex;
   flex-direction: column;
@@ -769,17 +876,19 @@ h2 {
   padding: 9px 11px;
   border-radius: 14px;
   cursor: pointer;
-  background: var(--surface-alt);
-  border: 1px solid var(--border-strong);
+  background: var(--row);
+  border: 1px solid var(--line-08);
   transition: background .16s ease, border-color .16s ease;
 }
 
 .doc-row:hover {
-  background: rgba(52, 199, 89, .10);
-  border-color: rgba(52, 199, 89, .30);
+  background: var(--row-hover);
+  border-color: var(--row-hover-bd);
 }
 
-/* Negative margins crop the icon PNG's internal padding. */
+/* Negative margins crop the icon PNG's internal padding. The PNG is dark
+   line art; --pdf-filter inverts it in dark. A real light-ink asset is the
+   better long-term fix (THEMING.md §4). */
 .doc-icon {
   flex: none;
   width: 44px;
@@ -787,6 +896,7 @@ h2 {
   object-fit: contain;
   display: block;
   margin: -5px -6px -5px -4px;
+  filter: var(--pdf-filter);
 }
 
 .doc-main { min-width: 0; flex: 1; }
@@ -809,8 +919,8 @@ h2 {
   height: 150px;
   border-radius: 16px;
   overflow: hidden;
-  background: var(--surface-sunken);
-  border: 1px solid var(--border-strong);
+  background: var(--sunken);
+  border: 1px solid var(--line-08);
 }
 
 .season-bars {
@@ -825,7 +935,7 @@ h2 {
 .season-bar {
   flex: 1;
   border-radius: 4px 4px 2px 2px;
-  background: rgba(16, 42, 26, .12);
+  background: var(--emphasis);
 }
 
 .season-bar.last { background: var(--green); }
@@ -865,22 +975,22 @@ h2 {
   text-transform: uppercase;
   font-weight: 600;
   color: var(--ink-40);
-  background: var(--surface-sunken);
-  border-bottom: 1px solid var(--border-strong);
+  background: var(--sunken);
+  border-bottom: 1px solid var(--line-08);
   white-space: nowrap;
 }
 
 .season-table td {
   padding: 7px 12px;
   color: var(--ink-82);
-  border-bottom: 1px solid rgba(16, 42, 26, .05);
+  border-bottom: 1px solid var(--line-07);
   white-space: nowrap;
   user-select: text;
   -webkit-user-select: text;
 }
 
 .season-table tbody tr:last-child td { border-bottom: none; }
-.season-table tbody tr:hover td { background: var(--fill-neutral); }
+.season-table tbody tr:hover td { background: var(--chip); }
 .season-table td .dim { color: var(--ink-35); }
 /* NSF emphasis in the table is neutral weight, never a third hue. */
 .season-table td .emph { color: var(--ink); font-weight: 600; }
@@ -924,8 +1034,8 @@ h2 {
 .note {
   padding: 11px 13px;
   border-radius: 14px;
-  background: var(--surface-sunken);
-  border: 1px solid var(--border-strong);
+  background: var(--sunken);
+  border: 1px solid var(--line-08);
   font-size: 12.5px;
   line-height: 1.5;
   color: var(--ink-65);
@@ -936,7 +1046,7 @@ h2 {
 .note.santi {
   background: var(--green-tint);
   border: none;
-  color: #25543A;
+  color: var(--note-ink);
 }
 
 .note.santi .prefix { font-weight: 700; }
@@ -945,8 +1055,8 @@ h2 {
 
 .panel-footer {
   padding: 14px 18px 16px;
-  border-top: 1px solid var(--border);
-  background: var(--surface-sunken);
+  border-top: 1px solid var(--line-07);
+  background: var(--sunken);
 }
 
 .deciding-row { display: flex; align-items: center; gap: 8px; margin-bottom: 11px; }
@@ -957,7 +1067,7 @@ h2 {
   padding: 3px;
   gap: 2px;
   border-radius: 13px;
-  background: var(--fill-track);
+  background: var(--track);
 }
 
 .reviewer-opt {
@@ -975,7 +1085,7 @@ h2 {
 .reviewer-opt.active {
   color: var(--ink);
   background: var(--surface);
-  box-shadow: var(--shadow-segment);
+  box-shadow: 0 1px 3px var(--line-14);
 }
 
 .session-counter { margin-left: auto; font-size: 11.5px; color: var(--ink-38); }
@@ -996,15 +1106,16 @@ h2 {
   padding: 0;
 }
 
-/* Neutral, not red. */
+/* Neutral, not red — in both themes. */
 .btn-reject {
   flex: 1;
   color: var(--ink-muted);
-  background: var(--fill-button);
+  background: var(--btn);
 }
 
-.btn-reject:hover { background: var(--fill-button-hover); }
+.btn-reject:hover { background: var(--btn-hover); }
 
+/* The label is literal white on --green in both themes (per THEMING.md). */
 .btn-approve {
   flex: 2.1;
   color: #FFFFFF;
@@ -1025,7 +1136,7 @@ h2 {
 }
 
 .decision-banner.approved { color: var(--green-text); background: var(--green-tint); }
-.decision-banner.rejected { color: var(--ink-rejected); background: var(--fill-button); }
+.decision-banner.rejected { color: var(--ink-muted-2); background: var(--btn); }
 
 /* Reject-reason capture (behavior carried over from the shipped desk; the
    prototype fakes this step). Neutral styling throughout. */
@@ -1036,7 +1147,7 @@ h2 {
   height: 46px;
   border-radius: 16px;
   background: var(--surface);
-  border: 1px solid rgba(16, 42, 26, .12);
+  border: 1px solid var(--line-16);
   padding: 0 15px;
   font: inherit;
   font-size: 13px;
@@ -1055,10 +1166,10 @@ h2 {
   flex: none;
   padding: 0 16px;
   color: var(--ink-65);
-  background: var(--fill-neutral);
+  background: var(--chip);
 }
 
-.btn-cancel:hover { background: var(--fill-emphasis); }
+.btn-cancel:hover { background: var(--emphasis); }
 
 /* ── PDF viewer overlay ─────────────────────────────────────────────── */
 
@@ -1068,7 +1179,7 @@ h2 {
   z-index: 40;
   display: grid;
   place-items: center;
-  background: rgba(20, 40, 28, .28);
+  background: var(--scrim);
   backdrop-filter: blur(18px) saturate(140%);
   -webkit-backdrop-filter: blur(18px) saturate(140%);
 }
@@ -1076,6 +1187,7 @@ h2 {
 /* The only blur in the design; solid scrim where backdrop-filter is absent. */
 @supports not (backdrop-filter: blur(1px)) {
   .overlay { background: rgba(20, 40, 28, .45); }
+  :root[data-theme="dark"] .overlay { background: rgba(0, 0, 0, .72); }
 }
 
 .pdf-dialog {
@@ -1087,8 +1199,8 @@ h2 {
   border-radius: 26px;
   overflow: hidden;
   background: var(--surface);
-  border: 1px solid var(--border-strong);
-  box-shadow: 0 40px 90px -40px rgba(16, 42, 26, .45);
+  border: 1px solid var(--line-08);
+  box-shadow: 0 40px 90px -40px var(--line-45);
 }
 
 .pdf-dialog-header {
@@ -1096,7 +1208,7 @@ h2 {
   align-items: center;
   gap: 12px;
   padding: 15px 18px;
-  border-bottom: 1px solid var(--border-strong);
+  border-bottom: 1px solid var(--line-08);
 }
 
 .pdf-dialog-icon {
@@ -1105,6 +1217,7 @@ h2 {
   height: 32px;
   object-fit: contain;
   display: block;
+  filter: var(--pdf-filter);
 }
 
 .pdf-dialog-title { min-width: 0; }
@@ -1132,21 +1245,21 @@ h2 {
   font-size: 12.5px;
   font-weight: 500;
   color: var(--ink);
-  background: #F1F5F1;
-  border: 1px solid var(--border-strong);
+  background: var(--chip);
+  border: 1px solid var(--line-08);
   font-family: inherit;
 }
 
-.pill-btn:hover { background: #E6ECE6; }
+.pill-btn:hover { background: var(--emphasis); }
 
-.pill-btn.round { width: 32px; padding: 0; font-size: 14px; color: rgba(16, 35, 26, .55); }
+.pill-btn.round { width: 32px; padding: 0; font-size: 14px; color: var(--ink-55); }
 
 .pdf-dialog-body {
   flex: 1;
   min-height: 0;
   padding: 18px;
   overflow-y: auto;
-  background: #F6F9F6;
+  background: var(--viewer);
 }
 
 .pdf-page-frame {
@@ -1156,7 +1269,7 @@ h2 {
   border-radius: 14px;
   overflow: hidden;
   background: var(--surface);
-  border: 1px solid var(--border-strong);
+  border: 1px solid var(--line-08);
 }
 
 .pdf-page-frame canvas {

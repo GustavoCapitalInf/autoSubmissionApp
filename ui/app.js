@@ -128,16 +128,39 @@ function renderAll() {
   renderOverlay();
 }
 
+/* Theme — data-theme on the document root drives every color through the
+   token set; swapping it recolors instantly with no re-render. */
+
+const MOON_ICON =
+  `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 14.2A8.6 8.6 0 0 1 9.8 3.5a8.7 8.7 0 1 0 10.7 10.7z"></path></svg>`;
+const SUN_ICON =
+  `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2.8v2.1M12 19.1v2.1M2.8 12h2.1M19.1 12h2.1M5.5 5.5l1.5 1.5M17 17l1.5 1.5M18.5 5.5 17 7M7 17l-1.5 1.5"></path></svg>`;
+
+const currentTheme = () =>
+  document.documentElement.dataset.theme === "dark" ? "dark" : "light";
+
+function applyTheme(theme) {
+  document.documentElement.dataset.theme = theme;
+  renderSidebar();
+}
+
 function renderSidebar() {
   const sidebar = document.getElementById("sidebar");
   sidebar.classList.toggle("open", state.navOpen);
-  sidebar.querySelectorAll(".nav-item").forEach((item) => {
+  sidebar.querySelectorAll("[data-page]").forEach((item) => {
     const page = item.dataset.page;
     item.classList.toggle("active", state.navPage === page);
     // Tooltip shows on hover only while collapsed, driven by navHover state.
     item.querySelector(".nav-tip")
       .classList.toggle("show", !state.navOpen && state.navHover === page);
   });
+  // The theme row reads the *destination* theme: moon/"Dark mode" while
+  // light is active, sun/"Light mode" while dark is.
+  const dark = currentTheme() === "dark";
+  const themeLabel = dark ? "Light mode" : "Dark mode";
+  document.getElementById("theme-icon").innerHTML = dark ? SUN_ICON : MOON_ICON;
+  document.getElementById("theme-label").textContent = themeLabel;
+  document.getElementById("theme-tip").textContent = themeLabel;
   document.getElementById("side-avatar").textContent =
     state.reviewer.slice(0, 2).toUpperCase();
   document.getElementById("side-foot-name").textContent = state.reviewer;
@@ -682,6 +705,16 @@ document.addEventListener("click", (e) => {
       state.navHover = null;
       renderSidebar();
       break;
+    case "toggle-theme": {
+      // Instant swap, no crossfade; persist to the cache and the app's
+      // settings store on every toggle.
+      const next = currentTheme() === "dark" ? "light" : "dark";
+      applyTheme(next);
+      try { localStorage.setItem("capdesk-theme", next); } catch (e) {}
+      invoke("set_theme", { theme: next }).catch((e) =>
+        console.error("theme save failed:", e));
+      break;
+    }
     case "nav":
       state.navPage = el.dataset.page;
       renderSidebar();
@@ -736,8 +769,8 @@ document.addEventListener("click", (e) => {
 });
 
 // Collapsed-sidebar tooltips ride on navHover state (mouseenter/leave don't
-// bubble, so each nav item gets its own listeners).
-document.querySelectorAll(".nav-item").forEach((item) => {
+// bubble, so each nav item — and the theme row — gets its own listeners).
+document.querySelectorAll("[data-page]").forEach((item) => {
   item.addEventListener("mouseenter", () => {
     state.navHover = item.dataset.page;
     renderSidebar();
@@ -793,6 +826,18 @@ listen("server-event", (event) => {
 /* ── Boot ──────────────────────────────────────────────────────────── */
 
 (async function boot() {
+  renderSidebar();
+  // The inline <head> script already applied the cached/OS theme; reconcile
+  // with the Rust-side settings store, which survives a WebView data reset.
+  try {
+    const stored = await invoke("get_theme");
+    if (stored === "light" || stored === "dark") {
+      if (stored !== currentTheme()) applyTheme(stored);
+      try { localStorage.setItem("capdesk-theme", stored); } catch (e) {}
+    }
+  } catch (e) {
+    console.error("theme load failed:", e);
+  }
   try {
     const snapshot = await invoke("desk_state");
     state.baseUrl = snapshot.baseUrl;

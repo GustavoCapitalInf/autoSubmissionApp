@@ -6,10 +6,11 @@ whether each deal is **approved** (packet auto-submits to the matched lenders)
 or **rejected**. Built in Rust with Tauri; primarily targets Windows.
 
 The UI is a faithful implementation of the **CapDesk** design in
-[`design_handoff_capdesk/design_handoff_capdesk/`](design_handoff_capdesk/design_handoff_capdesk/)
-(light, flat, green/neutral iOS-style). An earlier handoff spelled the
-reviewer "Sanit" — the app uses **Santi** throughout, and the ingest API
-accepts both `santiNote` and the old `sanitNote` spelling.
+[`design_handoff_capdesk/`](design_handoff_capdesk/) (flat, green/neutral
+iOS-style; light and dark themes per `THEMING.md`, toggled from the sidebar
+and persisted in `ui-settings.json` in the data directory). An earlier
+handoff spelled the reviewer "Sanit" — the app uses **Santi** throughout, and
+the ingest API accepts both `santiNote` and the old `sanitNote` spelling.
 
 ## Architecture
 

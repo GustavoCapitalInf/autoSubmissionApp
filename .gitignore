@@ -3,3 +3,6 @@
 *.log
 .DS_Store
 .env
+
+# Local browser preview harness (mocked Tauri bridge) — never ship or commit
+/ui/dev.html
