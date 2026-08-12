@@ -1,6 +1,6 @@
-// Conduit — Submission Desk frontend.
+// CapDesk — Submission Desk frontend.
 // State shape mirrors the design handoff's prototype; data comes from the
-// local conduit-server via Tauri commands, live updates via `server-event`.
+// conduit-server via Tauri commands, live updates via `server-event`.
 
 const { invoke } = window.__TAURI__.core;
 const { listen } = window.__TAURI__.event;
@@ -15,18 +15,20 @@ const state = {
   filter: "Awaiting",       // Awaiting | Approved | Rejected
   reviewer: "Santi",        // stand-in for auth, per the handoff
   decided: 0,               // decisions made this session
+  autoSubmitted: 0,         // packets sent (server stat); approve increments
   docsOpen: true,
   viewing: null,            // { docId, name, meta, company, hasFile }
   rejecting: false,         // reject-reason capture visible
   search: "",
+  navOpen: false,           // sidebar expanded (collapsed 64px is the default)
+  navPage: "desk",          // active nav destination
+  navHover: null,           // nav item under the cursor — drives the tooltip
 };
 
-// Direct-loaded resources (img src, PDF fetch) can't carry headers, so the
+// Direct-loaded resources (PDF fetch, downloads) can't carry headers, so the
 // key rides as a query parameter.
 const docFileUrl = (docId) =>
   `${state.baseUrl}/api/documents/${docId}/file?key=${encodeURIComponent(state.fileKey)}`;
-const seasonalityUrl = (dealId) =>
-  `${state.baseUrl}/api/deals/${dealId}/seasonality?key=${encodeURIComponent(state.fileKey)}`;
 
 /* ── Formatting helpers ────────────────────────────────────────────── */
 
@@ -43,23 +45,6 @@ const fmtBytes = (b) =>
 const categoryLabel = (c) => {
   const s = String(c || "").replace(/[_-]+/g, " ").trim();
   return s ? s[0].toUpperCase() + s.slice(1) : "";
-};
-
-// Tile label — the server sniffs the real content type at ingest, so trust
-// it first, then the filename extension, then PDF.
-const docKind = (d) => {
-  const byType = {
-    "application/pdf": "PDF",
-    "text/csv": "CSV",
-    "text/plain": "TXT",
-    "application/json": "JSON",
-    "image/png": "PNG",
-    "image/jpeg": "JPG",
-  }[d.contentType];
-  if (byType) return byType;
-  const ext = (d.name || "").split(".").pop();
-  if (ext && ext.length <= 4 && ext !== d.name) return ext.toUpperCase();
-  return "PDF";
 };
 
 const isPdfDoc = (d) => !d.contentType || d.contentType === "application/pdf";
@@ -134,12 +119,28 @@ const panelDeal = () =>
 /* ── Rendering ─────────────────────────────────────────────────────── */
 
 function renderAll() {
+  renderSidebar();
   renderHeader();
   renderStats();
   renderTabs();
   renderList();
   renderPanel();
   renderOverlay();
+}
+
+function renderSidebar() {
+  const sidebar = document.getElementById("sidebar");
+  sidebar.classList.toggle("open", state.navOpen);
+  sidebar.querySelectorAll(".nav-item").forEach((item) => {
+    const page = item.dataset.page;
+    item.classList.toggle("active", state.navPage === page);
+    // Tooltip shows on hover only while collapsed, driven by navHover state.
+    item.querySelector(".nav-tip")
+      .classList.toggle("show", !state.navOpen && state.navHover === page);
+  });
+  document.getElementById("side-avatar").textContent =
+    state.reviewer.slice(0, 2).toUpperCase();
+  document.getElementById("side-foot-name").textContent = state.reviewer;
 }
 
 function renderHeader() {
@@ -150,9 +151,8 @@ function renderHeader() {
 }
 
 function renderStats() {
-  const c = counts();
-  document.getElementById("stat-queue").textContent = c.Awaiting;
-  document.getElementById("stat-submitted").textContent = c.Approved;
+  document.getElementById("stat-queue").textContent = counts().Awaiting;
+  document.getElementById("stat-submitted").textContent = state.autoSubmitted;
 }
 
 function renderTabs() {
@@ -167,7 +167,7 @@ function renderTabs() {
 
 function dealCard(d) {
   const sel = d.id === state.selId;
-  const nsfAlarm = d.nsf >= 5;
+  const nsfEmphasis = d.nsf >= 5;
   const decided = statusOf(d) !== "awaiting";
   const decidedLabel = decided
     ? `${statusOf(d) === "approved" ? "Approved" : "Rejected"} by ${esc(d.decidedBy || "")}`
@@ -179,7 +179,7 @@ function dealCard(d) {
        </div>`
     : "";
   return `
-  <div class="deal-card${sel ? " selected" : ""}" data-action="select-deal" data-id="${d.id}" data-selected="${sel}">
+  <div class="deal-card${sel ? " selected" : ""}" data-action="select-deal" data-id="${d.id}">
     <div class="deal-top">
       <div class="avatar risk-${esc(d.risk)}">${esc(d.initials)}</div>
       <div class="deal-main">
@@ -198,7 +198,7 @@ function dealCard(d) {
     <div class="deal-chips">
       <div class="chip"><span class="chip-key">FICO</span> ${esc(d.fico ?? "—")}</div>
       <div class="chip"><span class="chip-key">ADB</span> ${esc(d.adb ?? "—")}</div>
-      <div class="chip${nsfAlarm ? " alarm" : ""}"><span class="chip-key">NSF</span> ${esc(d.nsf)}</div>
+      <div class="chip${nsfEmphasis ? " emph" : ""}"><span class="chip-key">NSF</span> ${esc(d.nsf)}</div>
       <div class="chip">${(d.lenders || []).length} lenders matched</div>
       ${decidedCluster}
     </div>
@@ -239,6 +239,7 @@ function dealFields(sel) {
   const dim = (v) => (v == null || v === "N/A" || v === "None" ? "dim" : "");
   const val = (v) => esc(v ?? "N/A");
   // Field order matches the source submission sheet (reading left→right).
+  // Credit score and NSFs stay plain ink regardless of value — no thresholds.
   return [
     fieldCell("Company", val(sel.company)),
     fieldCell("Lead source", val(sel.leadSource), dim(sel.leadSource)),
@@ -247,7 +248,7 @@ function dealFields(sel) {
       sel.email ? `<a href="mailto:${esc(sel.email)}">${esc(sel.email)}</a>` : "N/A",
       sel.email ? "" : "dim"
     ),
-    fieldCell("Credit score", val(sel.fico), sel.fico != null && sel.fico < 620 ? "alarm" : ""),
+    fieldCell("Credit score", val(sel.fico)),
     fieldCell("Phone", val(sel.phone), dim(sel.phone)),
     fieldCell("Industry", val(sel.industry), dim(sel.industry)),
     fieldCell("Puller", val(sel.puller), dim(sel.puller)),
@@ -257,7 +258,7 @@ function dealFields(sel) {
     fieldCell("State", val(sel.state), dim(sel.state)),
     fieldCell("Deposits", val(sel.deposits), dim(sel.deposits)),
     fieldCell("Time in business", val(sel.tib), dim(sel.tib)),
-    fieldCell("NSFs", val(sel.nsf), sel.nsf >= 5 ? "alarm" : ""),
+    fieldCell("NSFs", val(sel.nsf)),
   ].join("");
 }
 
@@ -279,7 +280,7 @@ function seasonCalcTable(rows) {
     { key: "depositsPerMonth", label: "# Deposits", fmt: cell },
     { key: "averageDailyBalance", label: "ADB", fmt: fmtMoney },
     { key: "ledger", label: "Ledger", fmt: fmtMoney },
-    { key: "nsf", label: "NSF", fmt: (v) => `<span class="${Number(v) >= 5 ? "alarm" : ""}">${esc(v)}</span>` },
+    { key: "nsf", label: "NSF", fmt: (v) => `<span class="${Number(v) >= 5 ? "emph" : ""}">${esc(v)}</span>` },
   ].filter((c) => !c.skip && rows.some((r) => r && r[c.key] != null && r[c.key] !== ""));
   const tr = (r) =>
     `<tr>${cols
@@ -313,9 +314,7 @@ function seasonalitySection(sel) {
   </div>`;
   }
   let body;
-  if (sel.hasSeasonalityImage) {
-    body = `<img src="${seasonalityUrl(sel.id)}" alt="Seasonality breakdown">`;
-  } else if (Array.isArray(sel.season) && sel.season.length) {
+  if (Array.isArray(sel.season) && sel.season.length) {
     const max = Math.max(...sel.season);
     body = `<div class="season-bars">${sel.season
       .map((v, i) => {
@@ -339,13 +338,12 @@ function seasonalitySection(sel) {
 
 function docsSection(sel) {
   const docs = sel.docs || [];
-  const totalPages = docs.reduce((s, d) => s + (d.pages || 0), 0);
   const rows = state.docsOpen
     ? `<div class="doc-rows">${docs
         .map(
           (doc) => `
       <div class="doc-row" data-action="open-doc" data-doc-id="${doc.id}">
-        <div class="pdf-tile">${esc(docKind(doc))}</div>
+        <img class="doc-icon" src="assets/pdf-icon.png" alt="PDF">
         <div class="doc-main">
           <div class="doc-name">${esc(doc.name)}</div>
           <div class="doc-meta">${docMeta(doc)}</div>
@@ -358,9 +356,8 @@ function docsSection(sel) {
   return `
   <div>
     <div class="section-head docs-head" data-action="toggle-docs">
-      <div class="section-label">Documents in payload</div>
+      <div class="section-label">Documents Submitted</div>
       <div class="doc-count">${docs.length}</div>
-      <span class="section-head-note">${totalPages > 0 ? `${totalPages} pages` : ""}</span>
       <span class="docs-caret">${state.docsOpen ? "▾" : "▸"}</span>
     </div>
     ${rows}
@@ -369,13 +366,12 @@ function docsSection(sel) {
 
 function lendersSection(sel) {
   const lenders = sel.lenders || [];
+  // Every matched lender renders as a green chip — all of them are matches.
   return `
   <div>
     <div class="section-label" style="margin-bottom:10px;">Suggested lenders · auto-matched</div>
     <div class="lender-chips">
-      ${lenders
-        .map((name, i) => `<div class="lender-chip${i < 3 ? " top" : ""}">${esc(name)}</div>`)
-        .join("")}
+      ${lenders.map((name) => `<div class="lender-chip">${esc(name)}</div>`).join("")}
     </div>
   </div>`;
 }
@@ -397,7 +393,7 @@ function footerActions(sel) {
   }
   return `<div class="actions">
     <button class="btn btn-reject" data-action="reject">Reject</button>
-    <button class="btn btn-approve" data-action="approve">Approve &amp; auto-submit to ${(sel.lenders || []).length} lenders</button>
+    <button class="btn btn-approve" data-action="approve">Approve</button>
   </div>`;
 }
 
@@ -420,11 +416,12 @@ function renderPanel() {
     <div class="panel-eyebrow-row">
       <span class="panel-eyebrow ${eyebrow.cls}">${eyebrow.text}</span>
       <span class="panel-submitted">${sel ? fmtSubmitted(sel.submittedAt) : ""}</span>
+      <button class="panel-close" data-action="close-panel" title="Close">✕</button>
     </div>
     <h2>${esc(sel ? sel.company : "Nothing to review")}</h2>
     <div class="panel-chips">
-      <div class="panel-chip amount">${sel ? (sel.lenders || []).length : 0} lenders matched</div>
-      <div class="panel-chip position">Position ${sel ? esc(sel.position) : "—"}</div>
+      <div class="panel-chip matched">${sel ? (sel.lenders || []).length : 0} lenders matched</div>
+      <div class="panel-chip position"><span>Position</span><span>${sel ? esc(sel.position) : "—"}</span></div>
     </div>
   </div>`;
 
@@ -505,7 +502,7 @@ function renderOverlay() {
   <div class="overlay" data-action="close-viewer">
     <div class="pdf-dialog" data-stop-close>
       <div class="pdf-dialog-header">
-        <div class="pdf-tile">${esc(v.kind || "PDF")}</div>
+        <img class="pdf-dialog-icon" src="assets/pdf-icon.png" alt="PDF">
         <div class="pdf-dialog-title">
           <div class="pdf-dialog-name">${esc(v.name)}</div>
           <div class="pdf-dialog-meta">${esc(v.meta)} · ${esc(v.company)}</div>
@@ -534,7 +531,6 @@ function renderOverlay() {
 /// Non-PDF files (CSV bank exports, plain text) — fetched and shown as
 /// preformatted text inside the same dialog.
 async function loadTextPreview(url) {
-  const frame = document.getElementById("pdf-page-frame");
   try {
     const resp = await fetch(url);
     if (!resp.ok) throw new Error(`service answered ${resp.status}`);
@@ -591,6 +587,10 @@ async function loadPdf(url) {
 
 function upsertDeal(deal) {
   const i = state.deals.findIndex((d) => d.id === deal.id);
+  // The auto-submitted stat counts approval transitions, so the SSE echo of
+  // a decision this desk already applied doesn't double-count.
+  const wasApproved = i >= 0 && statusOf(state.deals[i]) === "approved";
+  if (statusOf(deal) === "approved" && !wasApproved) state.autoSubmitted += 1;
   if (i >= 0) state.deals[i] = deal;
   else state.deals.push(deal);
   state.deals.sort(
@@ -637,7 +637,6 @@ function openDoc(docId) {
     meta: docMeta(doc),
     company: sel.company,
     hasFile: doc.hasFile,
-    kind: docKind(doc),
     isPdf: isPdfDoc(doc),
     isImage: (doc.contentType || "").startsWith("image/"),
   };
@@ -661,20 +660,35 @@ document.addEventListener("click", (e) => {
       renderList();
       break;
     case "select-deal": {
-      // Toggle computed from the card's render-time selected flag, not from
-      // current state — a double-fired handler then resolves identically to
-      // a single fire (same card closes, any other card opens/swaps).
-      const wasSelected = el.dataset.selected === "true";
+      // Never a toggle: clicking a card always opens/swaps the panel. A
+      // toggling handler broke the prototype (double-fired click closed the
+      // panel within one frame). Close only via the panel's ✕.
       const id = Number(el.dataset.id);
-      state.selId = wasSelected ? null : id;
-      if (!wasSelected) state.lastSelId = id;
+      state.selId = id;
+      state.lastSelId = id;
       state.rejecting = false;
       renderList();
       renderPanel();
       break;
     }
+    case "close-panel":
+      state.selId = null;
+      state.rejecting = false;
+      renderList();
+      renderPanel();
+      break;
+    case "toggle-nav":
+      state.navOpen = !state.navOpen;
+      state.navHover = null;
+      renderSidebar();
+      break;
+    case "nav":
+      state.navPage = el.dataset.page;
+      renderSidebar();
+      break;
     case "reviewer":
       state.reviewer = el.dataset.name;
+      renderSidebar();
       renderPanel();
       break;
     case "toggle-docs":
@@ -721,6 +735,19 @@ document.addEventListener("click", (e) => {
   }
 });
 
+// Collapsed-sidebar tooltips ride on navHover state (mouseenter/leave don't
+// bubble, so each nav item gets its own listeners).
+document.querySelectorAll(".nav-item").forEach((item) => {
+  item.addEventListener("mouseenter", () => {
+    state.navHover = item.dataset.page;
+    renderSidebar();
+  });
+  item.addEventListener("mouseleave", () => {
+    state.navHover = null;
+    renderSidebar();
+  });
+});
+
 document.getElementById("search").addEventListener("input", (e) => {
   state.search = e.target.value;
   renderList();
@@ -739,14 +766,13 @@ document.addEventListener("keydown", (e) => {
     } else if (state.rejecting) {
       state.rejecting = false;
       renderPanel();
+    } else if (state.selId != null) {
+      state.selId = null;
+      renderList();
+      renderPanel();
     }
   }
 });
-
-// The ⌘K hint reads Ctrl+K on non-mac platforms.
-if (!/mac/i.test(navigator.platform)) {
-  document.getElementById("kbd-hint").textContent = "Ctrl K";
-}
 
 /* ── Live events from the service ──────────────────────────────────── */
 
@@ -760,8 +786,8 @@ listen("server-event", (event) => {
     upsertDeal(msg.deal);
     renderAll();
   }
-  // submission.completed → the packet went out; counters already reflect the
-  // approval, so nothing to redraw today. Hook toasts here later.
+  // submission.completed → the packet went out; the approval already moved
+  // the counters. Hook toasts here later.
 });
 
 /* ── Boot ──────────────────────────────────────────────────────────── */
@@ -772,6 +798,7 @@ listen("server-event", (event) => {
     state.baseUrl = snapshot.baseUrl;
     state.fileKey = snapshot.fileKey || "";
     state.deals = snapshot.deals || [];
+    state.autoSubmitted = snapshot.stats?.autoSubmitted ?? 0;
     state.deals.sort(
       (a, b) => new Date(b.submittedAt) - new Date(a.submittedAt) || b.id - a.id
     );

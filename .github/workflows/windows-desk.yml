@@ -1,4 +1,4 @@
-# Builds the Windows installer for the Conduit desk app.
+# Builds the Windows installer for the CapDesk desk app.
 #
 # Run it from the Actions tab (workflow_dispatch): optionally provide the
 # server URL and desk API key to bake into the build as defaults — reviewers
@@ -63,7 +63,7 @@ jobs:
       - name: Upload installer artifact
         uses: actions/upload-artifact@v4
         with:
-          name: conduit-desk-windows
+          name: capdesk-windows
           path: dist/*
           if-no-files-found: error
 

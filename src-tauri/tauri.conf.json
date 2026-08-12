@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Conduit Submission Desk",
+  "productName": "CapDesk",
   "version": "0.1.0",
-  "identifier": "com.capitalinfusion.conduit",
+  "identifier": "com.capitalinfusion.capdesk",
   "build": {
     "frontendDist": "../ui"
   },
@@ -11,7 +11,7 @@
     "windows": [
       {
         "label": "main",
-        "title": "Conduit — Submission Desk",
+        "title": "CapDesk — Submission Desk",
         "width": 1440,
         "height": 980,
         "minWidth": 1280,

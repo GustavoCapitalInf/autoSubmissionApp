@@ -1,15 +1,15 @@
-# Conduit — Submission Desk
+# CapDesk — Submission Desk
 
 Desktop app for the auto-submission workflow: **Santi** and **Careem** review a
 queue of newly submitted merchant funding deals and decide, one at a time,
 whether each deal is **approved** (packet auto-submits to the matched lenders)
 or **rejected**. Built in Rust with Tauri; primarily targets Windows.
 
-The UI is a faithful implementation of the design in
-[`design_handoff_submission_desk/`](design_handoff_submission_desk/).
-(The handoff spells the reviewer "Sanit" — that's a typo; the app uses
-**Santi** throughout, and the ingest API accepts both `santiNote` and the
-handoff's `sanitNote` spelling.)
+The UI is a faithful implementation of the **CapDesk** design in
+[`design_handoff_capdesk/design_handoff_capdesk/`](design_handoff_capdesk/design_handoff_capdesk/)
+(light, flat, green/neutral iOS-style). An earlier handoff spelled the
+reviewer "Sanit" — the app uses **Santi** throughout, and the ingest API
+accepts both `santiNote` and the old `sanitNote` spelling.
 
 ## Architecture
 
@@ -181,6 +181,9 @@ confirmation:
 - Not yet designed, so not built: bulk approve, J/K + A/R keyboard shortcuts,
   toasts/undo after a decision. (Search *is* implemented, as a
   company/puller/lender filter; reject captures an optional reason inline.)
+- **Seasonality** renders the submission sheet's month table (`seasonCalc`)
+  or the `season[]` bars. A `seasonalityPng` in the payload is stored by the
+  server but not shown on the desk — the sheet data is the source of truth.
 - The lender submission job is simulated
   (`crates/conduit-server/src/main.rs`, `approve_deal`) — wire the real
   lender API there.

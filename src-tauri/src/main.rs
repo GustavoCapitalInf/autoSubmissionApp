@@ -1,4 +1,4 @@
-//! Conduit Submission Desk — Tauri shell.
+//! CapDesk Submission Desk — Tauri shell.
 //!
 //! Thin client over the hosted `conduit-server`: commands proxy the HTTP API
 //! (desk API key attached), an SSE relay re-emits live server events as Tauri
@@ -74,7 +74,7 @@ async fn desk_state(state: State<'_, Desk>) -> Result<Value, String> {
         tokio::time::sleep(Duration::from_millis(300)).await;
     }
     Err(format!(
-        "The Conduit submission service at {base} is not reachable ({last_err})."
+        "The CapDesk submission service at {base} is not reachable ({last_err})."
     ))
 }
 
@@ -168,7 +168,7 @@ fn notify_new_deal(deal: &Value) {
     };
     std::thread::spawn(move || {
         if let Err(e) = notify_rust::Notification::new()
-            .appname("Conduit")
+            .appname("CapDesk")
             .summary("New deal submitted for review")
             .body(&body)
             .show()
@@ -246,5 +246,5 @@ fn main() {
             Ok(())
         })
         .run(tauri::generate_context!())
-        .expect("error while running the Conduit desk");
+        .expect("error while running the CapDesk desk");
 }
