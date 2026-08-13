@@ -13,7 +13,7 @@ use std::time::Duration;
 use conduit_core::config::DeskConfig;
 use futures_util::StreamExt;
 use serde_json::{json, Value};
-use tauri::{AppHandle, Emitter, State};
+use tauri::{AppHandle, Emitter, Manager, State};
 
 struct Desk {
     client: reqwest::Client,
@@ -185,16 +185,52 @@ async fn ensure_local_server(client: &reqwest::Client, base: &str) {
     eprintln!("conduit-server did not become healthy in time");
 }
 
+/// Reveal the desk window — also from the hidden-to-background state.
+fn show_main(app: &AppHandle) {
+    if let Some(win) = app.get_webview_window("main") {
+        let _ = win.show();
+        let _ = win.unminimize();
+        let _ = win.set_focus();
+    }
+}
+
 /// Bring the desk to the front and ask the WebView to open the deal's
 /// review panel. Runs on notification click, i.e. any thread.
 fn open_deal(app: &AppHandle, deal_id: i64) {
-    use tauri::Manager;
-    if let Some(win) = app.get_webview_window("main") {
-        let _ = win.unminimize();
-        let _ = win.show();
-        let _ = win.set_focus();
-    }
+    show_main(app);
     let _ = app.emit("open-deal", deal_id);
+}
+
+/// Closing the window hides the desk instead of quitting; tell the reviewer
+/// once per run so the disappearing window doesn't read as an exit.
+fn notify_background_once() {
+    use std::sync::atomic::{AtomicBool, Ordering};
+    static TOLD: AtomicBool = AtomicBool::new(false);
+    if TOLD.swap(true, Ordering::Relaxed) {
+        return;
+    }
+    const TITLE: &str = "CapDesk is still running";
+    const BODY: &str =
+        "New-deal notifications stay on. Reopen or quit from the tray icon.";
+    std::thread::spawn(|| {
+        #[cfg(not(windows))]
+        let result = notify_rust::Notification::new()
+            .appname("CapDesk")
+            .summary(TITLE)
+            .body(BODY)
+            .show()
+            .map(|_| ());
+        #[cfg(windows)]
+        let result = tauri_winrt_notification::Toast::new(
+            tauri_winrt_notification::Toast::POWERSHELL_APP_ID,
+        )
+        .title(TITLE)
+        .text1(BODY)
+        .show();
+        if let Err(e) = result {
+            eprintln!("notification failed: {e}");
+        }
+    });
 }
 
 fn notify_new_deal(app: &AppHandle, deal: &Value) {
@@ -315,6 +351,11 @@ fn main() {
     };
 
     tauri::Builder::default()
+        // Relaunching the exe while a hidden instance is in the background
+        // must surface that instance, not start a second SSE relay.
+        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+            show_main(app);
+        }))
         .plugin(tauri_plugin_opener::init())
         .manage(desk)
         .invoke_handler(tauri::generate_handler![
@@ -324,7 +365,49 @@ fn main() {
             get_theme,
             set_theme
         ])
+        // Closing the window backgrounds the desk: the SSE relay keeps
+        // running so new-deal notifications still fire. Quit is in the tray.
+        .on_window_event(|window, event| {
+            if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+                api.prevent_close();
+                let _ = window.hide();
+                notify_background_once();
+            }
+        })
         .setup(move |app| {
+            let open = tauri::menu::MenuItem::with_id(app, "open", "Open CapDesk", true, None::<&str>)?;
+            let quit = tauri::menu::MenuItem::with_id(app, "quit", "Quit CapDesk", true, None::<&str>)?;
+            let menu = tauri::menu::Menu::with_items(app, &[&open, &quit])?;
+            let mut tray = tauri::tray::TrayIconBuilder::with_id("main")
+                .tooltip("CapDesk — Submission Desk")
+                .menu(&menu)
+                // Left click opens the desk (Windows); Linux appindicators
+                // only do menus, where Open sits one click away.
+                .show_menu_on_left_click(false)
+                .on_menu_event(|app, event| match event.id().as_ref() {
+                    "open" => show_main(app),
+                    "quit" => app.exit(0),
+                    _ => {}
+                })
+                .on_tray_icon_event(|tray, event| {
+                    if let tauri::tray::TrayIconEvent::Click {
+                        button: tauri::tray::MouseButton::Left,
+                        button_state: tauri::tray::MouseButtonState::Up,
+                        ..
+                    } = event
+                    {
+                        show_main(tray.app_handle());
+                    }
+                });
+            if let Some(icon) = app.default_window_icon() {
+                tray = tray.icon(icon.clone());
+            }
+            // A missing tray (bare Linux setups) shouldn't take the desk down;
+            // without one, closing still backgrounds and notifications reopen.
+            if let Err(e) = tray.build(app) {
+                eprintln!("tray unavailable: {e}");
+            }
+
             let handle = app.handle().clone();
             tauri::async_runtime::spawn(async move {
                 if cfg.is_local() {
