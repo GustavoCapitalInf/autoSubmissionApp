@@ -101,9 +101,20 @@ async fn main() -> anyhow::Result<()> {
             ))?
             .join("files");
         println!("storage: local disk at {} (set SUPABASE_URL + SUPABASE_SERVICE_KEY for hosted storage)", root.display());
+        // Render's filesystem is ephemeral: deal rows would outlive their
+        // PDFs, which then 404 after the next deploy. Render sets RENDER=true
+        // in every service, so this misconfiguration is detectable.
+        if std::env::var("RENDER").is_ok() {
+            eprintln!(
+                "WARNING: running on Render with LOCAL disk storage — uploaded \
+                 documents will be LOST on every deploy/restart. Set SUPABASE_URL \
+                 and SUPABASE_SERVICE_KEY in the service's Environment tab."
+            );
+        }
         Storage::Local { root }
     };
     storage.init().await?;
+    let storage_degraded = std::env::var("RENDER").is_ok() && !cfg.use_supabase_storage();
 
     let pool = db::connect(&cfg.database_url).await?;
     if cfg.seed_demo && seed::seed_if_empty(&pool, &storage).await? {
@@ -120,7 +131,16 @@ async fn main() -> anyhow::Result<()> {
     };
 
     let app = Router::new()
-        .route("/health", get(|| async { "ok" }))
+        .route(
+            "/health",
+            get(move || async move {
+                if storage_degraded {
+                    "ok (WARNING: ephemeral local file storage — set SUPABASE_URL + SUPABASE_SERVICE_KEY)"
+                } else {
+                    "ok"
+                }
+            }),
+        )
         .route("/api/deals", post(ingest_deal).get(list_deals))
         .route("/api/deals/{id}", get(get_deal))
         .route("/api/deals/{id}/approve", post(approve_deal))
