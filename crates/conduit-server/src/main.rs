@@ -179,9 +179,18 @@ fn require_desk(state: &AppState, headers: &HeaderMap, query: Option<&HashMap<St
 async fn ingest_deal(
     State(state): State<AppState>,
     headers: HeaderMap,
-    Json(raw): Json<Value>,
+    body: axum::body::Bytes,
 ) -> Result<impl IntoResponse, ApiError> {
     require_key(presented_key(&headers, None), &state.cfg.ingest_api_key, "ingest")?;
+    // Parse the body ourselves instead of using the Json extractor: senders
+    // like Power Automate override the Content-Type header (text/plain), which
+    // would otherwise get rejected with a 415 before we ever see the payload.
+    let raw: Value = serde_json::from_slice(&body).map_err(|e| {
+        ApiError(
+            StatusCode::UNPROCESSABLE_ENTITY,
+            format!("request body is not valid JSON: {e}"),
+        )
+    })?;
     // Some webhook relays wrap the record in a top-level `body` key.
     let record = match &raw {
         Value::Object(map) if map.contains_key("body") && map["body"].is_object() => &raw["body"],
