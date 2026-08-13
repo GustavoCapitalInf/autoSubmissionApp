@@ -185,8 +185,21 @@ async fn ensure_local_server(client: &reqwest::Client, base: &str) {
     eprintln!("conduit-server did not become healthy in time");
 }
 
-fn notify_new_deal(deal: &Value) {
+/// Bring the desk to the front and ask the WebView to open the deal's
+/// review panel. Runs on notification click, i.e. any thread.
+fn open_deal(app: &AppHandle, deal_id: i64) {
+    use tauri::Manager;
+    if let Some(win) = app.get_webview_window("main") {
+        let _ = win.unminimize();
+        let _ = win.show();
+        let _ = win.set_focus();
+    }
+    let _ = app.emit("open-deal", deal_id);
+}
+
+fn notify_new_deal(app: &AppHandle, deal: &Value) {
     let company = deal["company"].as_str().unwrap_or("New deal").to_string();
+    let deal_id = deal["id"].as_i64().unwrap_or(0);
     let request = deal["request"].as_i64().unwrap_or(0);
     let lenders = deal["lenders"].as_array().map(|l| l.len()).unwrap_or(0);
     let body = if request > 0 {
@@ -197,21 +210,55 @@ fn notify_new_deal(deal: &Value) {
     } else {
         format!("{company} — {lenders} lenders matched")
     };
-    std::thread::spawn(move || {
-        let mut notification = notify_rust::Notification::new();
-        notification
-            .appname("CapDesk")
-            .summary("New deal submitted for review")
-            .body(&body)
-            // Reviewers step away from the desk; a toast that auto-expires
-            // (4s on some setups) gets missed. Keep it up until dismissed.
-            .timeout(notify_rust::Timeout::Never);
-        #[cfg(all(unix, not(target_os = "macos")))]
-        notification.urgency(notify_rust::Urgency::Critical);
-        if let Err(e) = notification.show() {
-            eprintln!("notification failed: {e}");
-        }
-    });
+
+    // Reviewers step away from the desk; a toast that auto-expires (4s on
+    // some setups) gets missed. Keep it up until dismissed, and open the
+    // deal when the notification is clicked.
+    #[cfg(not(windows))]
+    {
+        let app = app.clone();
+        std::thread::spawn(move || {
+            let mut notification = notify_rust::Notification::new();
+            notification
+                .appname("CapDesk")
+                .summary("New deal submitted for review")
+                .body(&body)
+                .action("default", "Open deal")
+                .timeout(notify_rust::Timeout::Never);
+            #[cfg(all(unix, not(target_os = "macos")))]
+            notification.urgency(notify_rust::Urgency::Critical);
+            match notification.show() {
+                // Blocks this thread until the toast is acted on or closed.
+                Ok(handle) => handle.wait_for_action(|action| {
+                    if action == "default" {
+                        open_deal(&app, deal_id);
+                    }
+                }),
+                Err(e) => eprintln!("notification failed: {e}"),
+            }
+        });
+    }
+
+    #[cfg(windows)]
+    {
+        use tauri_winrt_notification::{Scenario, Toast};
+        let app = app.clone();
+        std::thread::spawn(move || {
+            let result = Toast::new(Toast::POWERSHELL_APP_ID)
+                .title("New deal submitted for review")
+                .text1(&body)
+                // Reminder scenario keeps the toast on screen until dismissed.
+                .scenario(Scenario::Reminder)
+                .on_activated(move |_action| {
+                    open_deal(&app, deal_id);
+                    Ok(())
+                })
+                .show();
+            if let Err(e) = result {
+                eprintln!("notification failed: {e}");
+            }
+        });
+    }
 }
 
 fn format_thousands(n: i64) -> String {
@@ -247,7 +294,7 @@ async fn sse_relay(app: AppHandle, cfg: DeskConfig) {
                     if let Some(data) = line.trim_end().strip_prefix("data: ") {
                         if let Ok(value) = serde_json::from_str::<Value>(data) {
                             if value["type"] == "deal.created" {
-                                notify_new_deal(&value["deal"]);
+                                notify_new_deal(&app, &value["deal"]);
                             }
                             let _ = app.emit("server-event", value);
                         }

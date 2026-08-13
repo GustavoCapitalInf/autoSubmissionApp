@@ -823,6 +823,25 @@ listen("server-event", (event) => {
   // the counters. Hook toasts here later.
 });
 
+// Desktop-notification click: jump to the deal. The deal may have been
+// decided (or the filter/search changed) since the toast fired, so land on
+// whichever tab it currently lives in and clear the search.
+listen("open-deal", (event) => {
+  const id = Number(event.payload);
+  const deal = state.deals.find((d) => d.id === id);
+  if (!deal) return;
+  state.filter =
+    statusOf(deal) === "approved" ? "Approved"
+    : statusOf(deal) === "rejected" ? "Rejected"
+    : "Awaiting";
+  state.search = "";
+  document.getElementById("search").value = "";
+  state.selId = id;
+  state.lastSelId = id;
+  state.rejecting = false;
+  renderAll();
+});
+
 /* ── Boot ──────────────────────────────────────────────────────────── */
 
 (async function boot() {
