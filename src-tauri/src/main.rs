@@ -198,12 +198,17 @@ fn notify_new_deal(deal: &Value) {
         format!("{company} — {lenders} lenders matched")
     };
     std::thread::spawn(move || {
-        if let Err(e) = notify_rust::Notification::new()
+        let mut notification = notify_rust::Notification::new();
+        notification
             .appname("CapDesk")
             .summary("New deal submitted for review")
             .body(&body)
-            .show()
-        {
+            // Reviewers step away from the desk; a toast that auto-expires
+            // (4s on some setups) gets missed. Keep it up until dismissed.
+            .timeout(notify_rust::Timeout::Never);
+        #[cfg(all(unix, not(target_os = "macos")))]
+        notification.urgency(notify_rust::Urgency::Critical);
+        if let Err(e) = notification.show() {
             eprintln!("notification failed: {e}");
         }
     });
